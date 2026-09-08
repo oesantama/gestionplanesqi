@@ -4,6 +4,26 @@ Gestión de Planes QI — SPA (Vue 3 + Quasar 2) con builds para web, Android/iO
 (Capacitor) y Windows (Electron), y su API (Express + mysql2) conectada a la
 base de datos `qinspect_planesQi`.
 
+## Clonar y continuar en otro editor/computador
+
+```
+git clone git@github.com:oesantama/gestionplanesqi.git
+cd gestionplanesqi
+```
+
+Luego abre la carpeta `gestionplanesqi` con el editor que prefieras:
+
+- **VS Code**: `code gestionplanesqi` (o "Archivo → Abrir carpeta").
+- **WebStorm / IntelliJ**: "Open" y selecciona la carpeta `gestionplanesqi` (no `frontend/` ni `api/` por separado, para ver ambos proyectos en el mismo workspace).
+- Cualquier otro editor: solo necesita Node.js instalado (18+) -- no hay nada específico de un editor en particular.
+
+Cada subproyecto (`frontend/` y `api/`) tiene su propio `package.json` y su propio
+`.env`/`.env.example` -- son independientes, cada uno con su `npm install` y
+`.env` propio (ver más abajo). Ninguno de los dos `.env` reales se sube al
+repo (ver `.gitignore`); si es la primera vez que alguien clona el proyecto,
+debe crear su propio `api/.env` a partir de `api/.env.example` con las
+credenciales reales de la base de datos.
+
 ## Estructura
 
 ```
