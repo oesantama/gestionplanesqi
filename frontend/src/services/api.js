@@ -2,6 +2,7 @@ import { Notify } from 'quasar'
 import { logger } from './logger'
 import { offlineSync } from './offlineSync'
 import { offlineCache } from './offlineCache'
+import { localUserDb } from './localUserDb'
 
 const isNativeOrDesktop = typeof window !== 'undefined' && (
   window.Capacitor ||
@@ -126,6 +127,31 @@ export async function apiFetch(endpoint, options = {}) {
 
   // Interceptar modo sin conexión (Offline) directo antes de intentar red
   if (isOffline) {
+    if (cleanEndpoint.includes('/auth/login') && method === 'POST') {
+      let bodyData = options.body
+      if (typeof bodyData === 'string') {
+        try { bodyData = JSON.parse(bodyData) } catch {}
+      }
+      const { username, password } = bodyData || {}
+      const authRes = localUserDb.authenticate(username, password)
+
+      if (authRes.status === 'SUCCESS') {
+        logger.info(`📶 Autenticación Offline directa en la base local exitosa para [${username}]`)
+        return new Response(JSON.stringify({
+          ok: true,
+          token: authRes.user.token,
+          usuario: authRes.user.usuario,
+          offline: true,
+          message: 'Sesión iniciada correctamente en modo sin conexión'
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+      } else if (authRes.status === 'INVALID_PASSWORD') {
+        return new Response(JSON.stringify({
+          ok: false,
+          message: 'Contraseña incorrecta (Verificación local offline)'
+        }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+      }
+    }
+
     if (method === 'GET') {
       logger.warn(`Dispositivo Offline: Recuperando caché para GET ${cleanEndpoint}`)
       const cached = offlineCache.getCache(cleanEndpoint)
@@ -163,6 +189,23 @@ export async function apiFetch(endpoint, options = {}) {
     })
 
     logger.network(`HTTP Response ${response.status} <- ${url}`)
+
+    // Si la respuesta de inicio de sesión fue exitosa, registrar/actualizar el usuario en la base de datos local para uso offline futuro
+    if (response.ok && cleanEndpoint.includes('/auth/login') && method === 'POST') {
+      try {
+        const cloned = response.clone()
+        const data = await cloned.json()
+        let bodyData = options.body
+        if (typeof bodyData === 'string') {
+          try { bodyData = JSON.parse(bodyData) } catch {}
+        }
+        if (data.token && data.usuario && bodyData && bodyData.username && bodyData.password) {
+          localUserDb.saveUser(bodyData.username, bodyData.password, data.token, data.usuario)
+        }
+      } catch (e) {
+        logger.warn('Error guardando credenciales en base local post-login:', e.message)
+      }
+    }
 
     // Si la respuesta de consulta GET es exitosa, actualizar la caché local para disponibilidad offline
     if (response.ok && method === 'GET') {
@@ -217,6 +260,34 @@ export async function apiFetch(endpoint, options = {}) {
     return response
   } catch (error) {
     logger.error(`Fallo inicial en apiFetch (${url})`, error.message)
+
+    // Fallback de Autenticación Offline si ocurrió un error de red durante el intento de inicio de sesión
+    if (cleanEndpoint.includes('/auth/login') && method === 'POST') {
+      let bodyData = options.body
+      if (typeof bodyData === 'string') {
+        try { bodyData = JSON.parse(bodyData) } catch {}
+      }
+      const { username, password } = bodyData || {}
+      const authRes = localUserDb.authenticate(username, password)
+
+      if (authRes.status === 'SUCCESS') {
+        logger.info(`📶 Fallo de red recuperado exitosamente: Autenticando [${username}] con la base local de usuarios.`)
+        return new Response(JSON.stringify({
+          ok: true,
+          token: authRes.user.token,
+          usuario: authRes.user.usuario,
+          offline: true,
+          message: 'Sin conexión a internet. Sesión iniciada correctamente con credenciales guardadas en la base local.'
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+      } else if (authRes.status === 'INVALID_PASSWORD') {
+        return new Response(JSON.stringify({
+          ok: false,
+          message: 'Contraseña incorrecta (Verificación local offline)'
+        }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+      } else {
+        throw new Error(`📶 Dispositivo sin conexión a internet y no se encontró registro previo de [${username || 'este usuario'}] en la base de datos local. Conéctate a la red la primera vez para autenticar tus credenciales.`)
+      }
+    }
 
     // Si falló por error de red/fetch pero tenemos datos en caché para GET, devolver la caché
     if (method === 'GET') {

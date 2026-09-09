@@ -117,6 +117,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api'
+import { localUserDb } from '../services/localUserDb'
 import DiagnosticDialog from '../components/DiagnosticDialog.vue'
 import logoQi from '../assets/logo.png'
 
@@ -135,66 +136,13 @@ async function onLogin() {
   if (!username.value || !password.value) return
   
   loading.value = true
-  const inputKey = username.value.trim().toLowerCase()
-
-  // Soporte para inicio de sesión en Modo Sin Conexión (Offline)
-  if (typeof navigator !== 'undefined' && !navigator.onLine) {
-    const offlineUsersRaw = localStorage.getItem('qi_offline_users') || '{}'
-    let offlineUsers = {}
-    try { offlineUsers = JSON.parse(offlineUsersRaw) } catch (e) {}
-
-    const matchedUser = offlineUsers[inputKey] || Object.values(offlineUsers).find(u => u.username.toLowerCase() === inputKey)
-
-    if (matchedUser && matchedUser.password === password.value) {
-      localStorage.setItem('qi_token', matchedUser.token)
-      localStorage.setItem('qi_user', JSON.stringify(matchedUser.usuario))
-
-      $q.notify({
-        type: 'positive',
-        message: `📶 Modo Sin Conexión Activo: Sesión iniciada para ${matchedUser.usuario.nombre_completo || username.value}`,
-        icon: 'cloud_off',
-        position: 'top',
-        timeout: 5000
-      })
-      loading.value = false
-      router.push('/')
-      return
-    }
-
-    // Si no coincide la clave pero hay una sesión activa previa cargada
-    const cachedUserRaw = localStorage.getItem('qi_user')
-    const cachedToken = localStorage.getItem('qi_token')
-    if (cachedUserRaw && cachedToken) {
-      try {
-        const cachedUser = JSON.parse(cachedUserRaw)
-        $q.notify({
-          type: 'info',
-          message: `📶 Modo Sin Conexión: Sesión recuperada para ${cachedUser.nombre_completo || username.value}`,
-          icon: 'cloud_off',
-          position: 'top',
-          timeout: 5000
-        })
-        loading.value = false
-        router.push('/')
-        return
-      } catch (e) {}
-    }
-
-    $q.notify({
-      type: 'warning',
-      message: '📶 Dispositivo sin datos móviles ni internet. Para validar este usuario por primera vez necesitas conexión a red.',
-      icon: 'wifi_off',
-      position: 'top',
-      timeout: 6000
-    })
-    loading.value = false
-    return
-  }
+  const inputUser = username.value.trim()
+  const inputPass = password.value
 
   try {
     const response = await apiFetch('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ username: username.value, password: password.value })
+      body: JSON.stringify({ username: inputUser, password: inputPass })
     })
 
     const contentType = response.headers.get('content-type') || ''
@@ -216,56 +164,47 @@ async function onLogin() {
     localStorage.setItem('qi_token', data.token)
     localStorage.setItem('qi_user', JSON.stringify(data.usuario))
 
-    // Guardar credenciales para autenticación offline en este dispositivo
-    const offlineUsersRaw = localStorage.getItem('qi_offline_users') || '{}'
-    let offlineUsers = {}
-    try { offlineUsers = JSON.parse(offlineUsersRaw) } catch (e) {}
-    offlineUsers[inputKey] = {
-      username: username.value,
-      password: password.value,
-      token: data.token,
-      usuario: data.usuario
-    }
-    localStorage.setItem('qi_offline_users', JSON.stringify(offlineUsers))
+    // Guardar credenciales en la base de datos local para validación offline futura
+    localUserDb.saveUser(inputUser, inputPass, data.token, data.usuario)
+
+    const isOfflineSession = data.offline || (typeof navigator !== 'undefined' && !navigator.onLine)
 
     $q.notify({
-      type: 'positive',
-      message: `¡Bienvenido ${data.usuario.nombre_completo}!`,
-      icon: 'verified_user',
-      position: 'top'
+      type: isOfflineSession ? 'warning' : 'positive',
+      message: isOfflineSession
+        ? `📶 Modo Sin Conexión: Sesión iniciada correctamente para ${data.usuario.nombre_completo || inputUser}`
+        : `¡Bienvenido ${data.usuario.nombre_completo || inputUser}!`,
+      icon: isOfflineSession ? 'cloud_off' : 'verified_user',
+      position: 'top',
+      timeout: 5000
     })
 
     router.push('/')
   } catch (err) {
-    // Si la llamada falló por error de red/offline durante el intento de login
-    const isOfflineErr = (typeof navigator !== 'undefined' && !navigator.onLine) || err.message.includes('sin conexión')
-    
-    if (isOfflineErr) {
-      const offlineUsersRaw = localStorage.getItem('qi_offline_users') || '{}'
-      let offlineUsers = {}
-      try { offlineUsers = JSON.parse(offlineUsersRaw) } catch (e) {}
-      const matchedUser = offlineUsers[inputKey] || Object.values(offlineUsers)[0]
+    // Si apiFetch falló por cualquier motivo de red, intentar respaldo directo con la base local de usuarios
+    const authRes = localUserDb.authenticate(inputUser, inputPass)
 
-      if (matchedUser) {
-        localStorage.setItem('qi_token', matchedUser.token)
-        localStorage.setItem('qi_user', JSON.stringify(matchedUser.usuario))
+    if (authRes.status === 'SUCCESS') {
+      const { user } = authRes
+      localStorage.setItem('qi_token', user.token)
+      localStorage.setItem('qi_user', JSON.stringify(user.usuario))
 
-        $q.notify({
-          type: 'positive',
-          message: `📶 Modo Sin Conexión: Sesión recuperada para ${matchedUser.usuario.nombre_completo}`,
-          icon: 'cloud_off',
-          position: 'top',
-          timeout: 5000
-        })
-        router.push('/')
-        return
-      }
+      $q.notify({
+        type: 'positive',
+        message: `📶 Modo Sin Conexión: Sesión iniciada para ${user.usuario.nombre_completo || inputUser} (Validación local)`,
+        icon: 'cloud_off',
+        position: 'top',
+        timeout: 5000
+      })
+
+      router.push('/')
+      return
     }
 
     $q.notify({
-      type: isOfflineErr ? 'warning' : 'negative',
+      type: 'negative',
       message: err.message || 'No fue posible iniciar sesión',
-      icon: isOfflineErr ? 'wifi_off' : 'error',
+      icon: 'error',
       position: 'top',
       timeout: 6000
     })
