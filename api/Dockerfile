@@ -5,8 +5,8 @@ WORKDIR /app
 # Copiar archivos de dependencias
 COPY package*.json ./
 
-# Instalar dependencias
-RUN npm install --omit=dev
+# Instalar dependencias de forma limpia y rápida
+RUN npm install --production --no-audit --no-fund
 
 # Copiar código de la aplicación
 COPY . .
