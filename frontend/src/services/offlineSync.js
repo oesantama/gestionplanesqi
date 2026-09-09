@@ -75,21 +75,20 @@ class OfflineSyncService {
   notifyOffline() {
     Notify.create({
       type: 'warning',
-      message: '⚠️ Estás sin conexión a internet o datos. Los cambios se guardarán localmente en el dispositivo.',
+      message: '📶 [Sin Conexión] Operando con base de datos local del dispositivo.',
       icon: 'wifi_off',
-      position: 'top',
-      timeout: 5000,
-      actions: [{ label: 'Entendido', color: 'white' }]
+      position: 'bottom-right',
+      timeout: 3500
     })
   }
 
   notifyOnline() {
     Notify.create({
       type: 'info',
-      message: '🌐 Conexión restablecida. Comprobando sincronización en segundo plano...',
+      message: '🌐 [Conexión Restablecida] Sincronizando datos pendientes...',
       icon: 'wifi',
-      position: 'top',
-      timeout: 4000
+      position: 'bottom-right',
+      timeout: 3500
     })
   }
 
@@ -110,10 +109,10 @@ class OfflineSyncService {
 
     Notify.create({
       type: 'warning',
-      message: `📥 Operación guardada localmente (${this.queue.length} en espera de datos/internet).`,
+      message: `💾 [Sincronización] Registro guardado localmente (${this.queue.length} pendiente(s)).`,
       icon: 'cloud_off',
       position: 'bottom-right',
-      timeout: 4000
+      timeout: 3500
     })
 
     return queueItem
@@ -178,10 +177,10 @@ class OfflineSyncService {
     if (successCount > 0) {
       Notify.create({
         type: 'positive',
-        message: `✅ Sincronización automática completada. ${successCount} de ${totalToSync} registros enviados al servidor.`,
+        message: `⚡ [Sincronización Auto] ${successCount} de ${totalToSync} registro(s) sincronizados con el servidor.`,
         icon: 'cloud_done',
-        position: 'top',
-        timeout: 6000
+        position: 'bottom-right',
+        timeout: 4000
       })
 
       // Emitir evento global para refrescar vistas Vue si están abiertas
@@ -193,10 +192,10 @@ class OfflineSyncService {
     if (failedItems.length > 0) {
       Notify.create({
         type: 'negative',
-        message: `⚠️ Quedan ${failedItems.length} registros pendientes de sincronización por error de servidor.`,
+        message: `⚠️ [Sincronización] Quedan ${failedItems.length} registro(s) pendientes por error de red.`,
         icon: 'sync_problem',
-        position: 'top',
-        timeout: 6000
+        position: 'bottom-right',
+        timeout: 4000
       })
     }
   }
