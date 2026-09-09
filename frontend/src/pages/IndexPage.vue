@@ -155,6 +155,8 @@
                   <img
                     v-if="emp.ruta_logo && !emp.hasImageError"
                     :src="emp.ruta_logo"
+                    crossorigin="anonymous"
+                    referrerpolicy="no-referrer"
                     style="width: 100%; height: 100%; object-fit: contain;"
                     @error="handleImageError(emp)"
                   />
@@ -322,6 +324,8 @@
                   <img
                     v-if="props.row.ruta_logo && !props.row.hasImageError"
                     :src="props.row.ruta_logo"
+                    crossorigin="anonymous"
+                    referrerpolicy="no-referrer"
                     style="width: 100%; height: 100%; object-fit: contain;"
                     @error="handleImageError(props.row)"
                   />
