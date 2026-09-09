@@ -7,14 +7,17 @@ const { encrypt, decrypt } = require("../helpers/encryption");
 
 module.exports = (app) => {
   // GET /api/usuarios - Listar todos los usuarios del sistema con su rol (3NF)
+  // GET /api/usuarios - Listar todos los usuarios del sistema con su rol y operadora (3NF)
   app.get("/api/usuarios", verifyActiveSession, async (req, res) => {
     try {
       const [rows] = await pool.query(`
-        SELECT u.id, u.uuid, u.username, u.email, u.nombre_completo, u.rol_id, 
+        SELECT u.id, u.uuid, u.username, u.email, u.nombre_completo, u.rol_id, u.operadora_id,
                r.nombre AS rol_nombre, r.codigo AS rol_codigo,
+               o.nombre AS operadora_nombre,
                u.intentos_fallidos, u.bloqueado_hasta, u.ultimo_login, u.estado, u.creado_en, u.password_actualizado_en
         FROM sys_usuarios u
         INNER JOIN sys_roles r ON u.rol_id = r.id
+        LEFT JOIN sys_operadoras o ON u.operadora_id = o.id
         ORDER BY u.id ASC
       `);
 
@@ -33,7 +36,7 @@ module.exports = (app) => {
   // POST /api/usuarios - Registrar nuevo usuario con hash bcrypt
   app.post("/api/usuarios", verifyActiveSession, async (req, res) => {
     try {
-      const { username, email, password, nombre_completo, rol_id, estado = 1 } = req.body || {};
+      const { username, email, password, nombre_completo, rol_id, operadora_id = null, estado = 1 } = req.body || {};
 
       if (!username || !email || !password || !nombre_completo || !rol_id) {
         return res.status(400).json({ message: "Todos los campos son obligatorios (usuario, email, contraseña, nombre, rol)" });
@@ -56,11 +59,12 @@ module.exports = (app) => {
 
       const userUuid = crypto.randomUUID();
       const passwordHash = await bcrypt.hash(password, 10);
+      const parsedOperadoraId = operadora_id ? parseInt(operadora_id) : null;
 
       const [result] = await pool.query(
-        `INSERT INTO sys_usuarios (uuid, username, email, password_hash, nombre_completo, rol_id, estado)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [userUuid, username, encryptedEmail, passwordHash, nombre_completo, rol_id, estado]
+        `INSERT INTO sys_usuarios (uuid, username, email, password_hash, nombre_completo, rol_id, operadora_id, estado)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [userUuid, username, encryptedEmail, passwordHash, nombre_completo, rol_id, parsedOperadoraId, estado]
       );
 
       const newUserId = result.insertId;
@@ -77,13 +81,14 @@ module.exports = (app) => {
   app.put("/api/usuarios/:id", verifyActiveSession, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { username, email, password, nombre_completo, rol_id, estado } = req.body || {};
+      const { username, email, password, nombre_completo, rol_id, operadora_id = null, estado } = req.body || {};
 
       if (!username || !email || !nombre_completo || !rol_id) {
         return res.status(400).json({ message: "Nombre, correo, usuario y rol son requeridos" });
       }
 
       const encryptedEmail = encrypt(email);
+      const parsedOperadoraId = operadora_id ? parseInt(operadora_id) : null;
 
       // Si se proporcionó una nueva contraseña, validar complejidad e histórico de 3 claves
       if (password && password.trim().length > 0) {
@@ -99,8 +104,8 @@ module.exports = (app) => {
       }
 
       await pool.query(
-        `UPDATE sys_usuarios SET username = ?, email = ?, nombre_completo = ?, rol_id = ?, estado = ? WHERE id = ?`,
-        [username, encryptedEmail, nombre_completo, rol_id, estado, id]
+        `UPDATE sys_usuarios SET username = ?, email = ?, nombre_completo = ?, rol_id = ?, operadora_id = ?, estado = ? WHERE id = ?`,
+        [username, encryptedEmail, nombre_completo, rol_id, parsedOperadoraId, estado, id]
       );
 
       res.json({ message: "Usuario actualizado correctamente" });

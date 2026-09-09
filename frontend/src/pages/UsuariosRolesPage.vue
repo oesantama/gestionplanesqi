@@ -324,6 +324,24 @@
             @update:model-value="onUserRoleSelected"
           />
 
+          <!-- Selección de Operadora Opcional -->
+          <q-select
+            v-model="userForm.operadora_id"
+            :options="operadoraOptions"
+            emit-value
+            map-options
+            label="Empresa Operadora (Opcional)"
+            outlined
+            dark
+            dense
+            color="primary"
+            clearable
+          >
+            <template #prepend>
+              <q-icon name="apartment" color="primary" />
+            </template>
+          </q-select>
+
           <!-- Mini-Menú Estructurado con Permisos Granulares del Rol Seleccionado -->
           <div v-if="userForm.rol_id" class="qi-card q-pa-sm" style="border: 1px solid rgba(0, 210, 106, 0.3); background: rgba(0, 210, 106, 0.03); border-radius: 8px;">
             <div class="text-caption text-weight-bold text-primary q-mb-xs row items-center justify-between">
@@ -419,6 +437,7 @@ const activeTab = ref('usuarios')
 // Usuarios
 const usuarios = ref([])
 const roles = ref([])
+const operadoras = ref([])
 const loadingUsers = ref(false)
 const userFilter = ref('')
 const userDialogOpen = ref(false)
@@ -443,6 +462,7 @@ const userForm = ref({
   confirmPassword: '',
   nombre_completo: '',
   rol_id: null,
+  operadora_id: null,
   estadoBool: true
 })
 
@@ -451,6 +471,16 @@ const roleOptions = computed(() => {
     label: r.nombre,
     value: r.id
   }))
+})
+
+const operadoraOptions = computed(() => {
+  return [
+    { label: 'Ninguna (Usuario Global)', value: null },
+    ...operadoras.value.map(o => ({
+      label: o.nombre + (o.estado === 0 ? ' (Inactiva)' : ''),
+      value: o.id
+    }))
+  ]
 })
 
 // Reglas reactivas de contraseña
@@ -490,6 +520,7 @@ const userColumns = [
   { name: 'username', label: 'Usuario', field: 'username', sortable: true, align: 'left' },
   { name: 'email', label: 'Correo Electrónico', field: 'email', align: 'left' },
   { name: 'rol_nombre', label: 'Rol', field: 'rol_nombre', align: 'left' },
+  { name: 'operadora_nombre', label: 'Operadora', field: row => row.operadora_nombre || 'Ninguna / Global', sortable: true, align: 'left' },
   { name: 'ultimo_login', label: 'Último Acceso', field: 'ultimo_login', align: 'center' },
   { name: 'estado', label: 'Estado / Seguridad', field: 'estado', align: 'center' },
   { name: 'acciones', label: 'Acciones', field: 'acciones', align: 'center' }
@@ -532,6 +563,17 @@ async function fetchRoles() {
   }
 }
 
+async function fetchOperadoras() {
+  try {
+    const res = await apiFetch('/operadoras')
+    if (res.ok) {
+      operadoras.value = await res.json()
+    }
+  } catch (err) {
+    console.error('Error al cargar operadoras:', err)
+  }
+}
+
 async function fetchRoleAllowedMenusPreview(rolId) {
   if (!rolId) return
   loadingRolePreview.value = true
@@ -556,6 +598,9 @@ async function openCreateUserDialog() {
   if (!roles.value.length) {
     await fetchRoles()
   }
+  if (!operadoras.value.length) {
+    await fetchOperadoras()
+  }
 
   isEditingUser.value = false
   showPassword.value = false
@@ -570,6 +615,7 @@ async function openCreateUserDialog() {
     confirmPassword: '',
     nombre_completo: '',
     rol_id: defaultRolId,
+    operadora_id: null,
     estadoBool: true
   }
 
@@ -581,6 +627,9 @@ async function openEditUserDialog(row) {
   if (!roles.value.length) {
     await fetchRoles()
   }
+  if (!operadoras.value.length) {
+    await fetchOperadoras()
+  }
 
   isEditingUser.value = true
   showPassword.value = false
@@ -589,6 +638,7 @@ async function openEditUserDialog(row) {
     ...row,
     password: '',
     confirmPassword: '',
+    operadora_id: row.operadora_id || null,
     estadoBool: row.estado === 1
   }
 
@@ -740,6 +790,7 @@ async function savePermissions() {
 
 onMounted(async () => {
   await fetchRoles()
+  await fetchOperadoras()
   await fetchUsuarios()
   await fetchPermisosRol()
 })

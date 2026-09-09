@@ -340,7 +340,8 @@ const DEFAULT_FALLBACK_MENU = [
     submenus: [
       { id: 51, nombre: 'Gestión de Menús', descripcion: 'Menús, submenús y pestañas', icono: 'menu_open', ruta: '/configuracion/menus' },
       { id: 52, nombre: 'Usuarios y Roles', descripcion: 'Gestión de accesos', icono: 'manage_accounts', ruta: '/configuracion/usuarios' },
-      { id: 53, nombre: 'Bitácora de Auditoría', descripcion: 'Auditoría ISO 27001 / BASC', icono: 'security', ruta: '/configuracion/bitacora' }
+      { id: 53, nombre: 'Operadoras', descripcion: 'Empresas operadoras registradas', icono: 'apartment', ruta: '/configuracion/operadoras' },
+      { id: 54, nombre: 'Bitácora de Auditoría', descripcion: 'Auditoría ISO 27001 / BASC', icono: 'security', ruta: '/configuracion/bitacora' }
     ]
   }
 ]

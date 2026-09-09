@@ -22,6 +22,7 @@ const routes = [
       { path: 'perfil', component: () => import('../pages/PerfilPage.vue') },
       { path: 'configuracion/menus', component: () => import('../pages/MenuConfigPage.vue') },
       { path: 'configuracion/usuarios', component: () => import('../pages/UsuariosRolesPage.vue') },
+      { path: 'configuracion/operadoras', component: () => import('../pages/OperadorasPage.vue') },
       { path: 'configuracion/bitacora', component: () => import('../pages/BitacoraPage.vue') },
       { path: 'capacitaciones-operadora', component: () => import('../pages/CapacitacionesOperadoraPage.vue') }
     ]

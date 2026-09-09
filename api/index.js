@@ -30,6 +30,7 @@ require("./routes/perfil")(app);
 require("./routes/bitacora")(app);
 require("./routes/dashboard")(app);
 require("./routes/capacitacionesOperadora")(app);
+require("./routes/operadoras")(app);
 
 const PORT = process.env.PORT || 3060;
 app.listen(PORT, () => {
