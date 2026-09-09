@@ -8,9 +8,9 @@
 
   # 1. Redireccionar peticiones API al contenedor Node (Puerto 3060)
   RewriteCond %{REQUEST_URI} ^/api
-  RewriteRule ^api/(.*)$ http://localhost:3060/api/$1 [P,L]
+  RewriteRule ^api/(.*)$ http://127.0.0.1:3060/api/$1 [P,L]
 
   # 2. Redireccionar peticiones Frontend al contenedor Nginx Docker (Puerto 8060)
   RewriteCond %{REQUEST_URI} !^/api
-  RewriteRule ^(.*)$ http://localhost:8060/$1 [P,L]
+  RewriteRule ^(.*)$ http://127.0.0.1:8060/$1 [P,L]
 </IfModule>
