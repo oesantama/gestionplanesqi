@@ -10,7 +10,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Servidor Nginx para producción
-FROM nginx:alpine AS production-stage
+FROM nginx:stable-alpine AS production-stage
 
 COPY --from=build-stage /app/dist/spa /usr/share/nginx/html
 COPY nginx-main.conf /etc/nginx/nginx.conf

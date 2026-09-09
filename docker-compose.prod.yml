@@ -24,4 +24,6 @@ services:
       - "8060:80"
     depends_on:
       - api
+    security_opt:
+      - seccomp:unconfined
     restart: always
