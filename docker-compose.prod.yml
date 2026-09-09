@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile
     container_name: gestionplanesqi-frontend-prod
     ports:
-      - "80:80"
+      - "8060:80"
     depends_on:
       - api
     restart: always
