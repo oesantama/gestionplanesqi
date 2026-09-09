@@ -152,12 +152,20 @@
             <div class="row items-center justify-between q-mb-md">
               <div class="row items-center no-wrap">
                 <q-avatar size="44px" color="secondary" class="q-mr-md border-glow overflow-hidden">
-                  <img
+                  <q-img
                     v-if="emp.ruta_logo && !emp.hasImageError"
                     :src="emp.ruta_logo"
-                    style="width: 100%; height: 100%; object-fit: contain;"
+                    style="width: 100%; height: 100%;"
+                    fit="contain"
+                    no-spinner
                     @error="handleImageError(emp)"
-                  />
+                  >
+                    <template #error>
+                      <div class="fit row items-center justify-center bg-secondary">
+                        <q-icon name="business" color="primary" size="24px" />
+                      </div>
+                    </template>
+                  </q-img>
                   <q-icon v-else name="business" color="primary" size="24px" />
                 </q-avatar>
                 <div>
@@ -319,12 +327,20 @@
             <q-td :props="props">
               <div class="row items-center no-wrap">
                 <q-avatar size="30px" color="secondary" class="q-mr-sm border-glow overflow-hidden">
-                  <img
+                  <q-img
                     v-if="props.row.ruta_logo && !props.row.hasImageError"
                     :src="props.row.ruta_logo"
-                    style="width: 100%; height: 100%; object-fit: contain;"
+                    style="width: 100%; height: 100%;"
+                    fit="contain"
+                    no-spinner
                     @error="handleImageError(props.row)"
-                  />
+                  >
+                    <template #error>
+                      <div class="fit row items-center justify-center bg-secondary">
+                        <q-icon name="business" color="primary" size="16px" />
+                      </div>
+                    </template>
+                  </q-img>
                   <q-icon v-else name="business" color="primary" size="16px" />
                 </q-avatar>
                 <div>
