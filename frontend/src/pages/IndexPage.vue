@@ -457,6 +457,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api'
 import { exportTableToExcel } from '../utils/exportExcel'
+import QiTable from '../components/QiTable.vue'
 
 const $q = useQuasar()
 

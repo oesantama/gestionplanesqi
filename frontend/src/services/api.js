@@ -105,10 +105,17 @@ export async function testApiConnection(targetUrl = null) {
   return { ok: false, status: 0, message: `No fue posible conectar con ninguna de las IPs o puertos del servidor` }
 }
 
+function setNetworkState(online) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('qi_is_offline', online ? 'false' : 'true')
+    window.dispatchEvent(new CustomEvent('qi-network-status', { detail: { online } }))
+  }
+}
+
 export async function apiFetch(endpoint, options = {}) {
   const token = localStorage.getItem('qi_token')
   const method = (options.method || 'GET').toUpperCase()
-  const isOffline = typeof navigator !== 'undefined' && !navigator.onLine
+  const isOffline = (typeof navigator !== 'undefined' && !navigator.onLine) || localStorage.getItem('qi_is_offline') === 'true'
 
   const headers = {
     'Content-Type': 'application/json',
@@ -125,8 +132,9 @@ export async function apiFetch(endpoint, options = {}) {
 
   logger.network(`HTTP ${method} -> ${url}`)
 
-  // Interceptar modo sin conexión (Offline) directo antes de intentar red
+  // Interceptación inicial si el navegador/dispositivo está en modo offline explícito
   if (isOffline) {
+    setNetworkState(false)
     if (cleanEndpoint.includes('/auth/login') && method === 'POST') {
       let bodyData = options.body
       if (typeof bodyData === 'string') {
@@ -189,6 +197,7 @@ export async function apiFetch(endpoint, options = {}) {
     })
 
     logger.network(`HTTP Response ${response.status} <- ${url}`)
+    setNetworkState(true)
 
     // Si la respuesta de inicio de sesión fue exitosa, registrar/actualizar el usuario en la base de datos local para uso offline futuro
     if (response.ok && cleanEndpoint.includes('/auth/login') && method === 'POST') {
@@ -260,6 +269,7 @@ export async function apiFetch(endpoint, options = {}) {
     return response
   } catch (error) {
     logger.error(`Fallo inicial en apiFetch (${url})`, error.message)
+    setNetworkState(false)
 
     // Fallback de Autenticación Offline si ocurrió un error de red durante el intento de inicio de sesión
     if (cleanEndpoint.includes('/auth/login') && method === 'POST') {

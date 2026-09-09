@@ -32,7 +32,7 @@
             @click="showDiagnosticModal = true"
           >
             <q-icon :name="isOnline ? 'wifi' : 'wifi_off'" size="16px" class="q-mr-xs" />
-            <span>{{ isOnline ? 'En línea' : 'Modo Offline' }}</span>
+            <span>{{ isOnline ? 'En línea' : 'Sin Conexión' }}</span>
             <q-badge v-if="pendingCount > 0" color="dark" text-color="warning" class="q-ml-xs text-weight-bolder">
               {{ pendingCount }}
             </q-badge>
@@ -231,11 +231,15 @@ const $q = useQuasar()
 const router = useRouter()
 
 const showDiagnosticModal = ref(false)
-const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true)
+const isOnline = ref(localStorage.getItem('qi_is_offline') !== 'true' && (typeof navigator !== 'undefined' ? navigator.onLine : true))
 const pendingCount = ref(offlineSync.getPendingCount())
 
-function updateNetworkStatus() {
-  isOnline.value = navigator.onLine
+function updateNetworkStatus(evt) {
+  if (evt && evt.type === 'qi-network-status') {
+    isOnline.value = evt.detail.online
+  } else {
+    isOnline.value = localStorage.getItem('qi_is_offline') !== 'true' && (typeof navigator !== 'undefined' ? navigator.onLine : true)
+  }
   pendingCount.value = offlineSync.getPendingCount()
 }
 
@@ -297,13 +301,17 @@ onMounted(() => {
   fetchMenu()
   window.addEventListener('online', updateNetworkStatus)
   window.addEventListener('offline', updateNetworkStatus)
+  window.addEventListener('qi-network-status', updateNetworkStatus)
   window.addEventListener('qi-offline-synced', updateNetworkStatus)
+  window.addEventListener('qi-offline-mutation', updateNetworkStatus)
 })
 
 onUnmounted(() => {
   window.removeEventListener('online', updateNetworkStatus)
   window.removeEventListener('offline', updateNetworkStatus)
+  window.removeEventListener('qi-network-status', updateNetworkStatus)
   window.removeEventListener('qi-offline-synced', updateNetworkStatus)
+  window.removeEventListener('qi-offline-mutation', updateNetworkStatus)
 })
 </script>
 

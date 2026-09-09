@@ -135,10 +135,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api.js'
 import { exportTableToExcel } from '../utils/exportExcel.js'
+import QiTable from '../components/QiTable.vue'
 
 function exportExcel() {
   exportTableToExcel(columns, empleados.value, 'personal_empleados_qi')
@@ -181,9 +182,15 @@ async function fetchEmpleados() {
   loading.value = true
   try {
     const res = await apiFetch(`/empleados?search=${encodeURIComponent(filter.value)}`)
-    if (res.ok) {
+    if (res && res.ok) {
       const data = await res.json()
-      empleados.value = data.rows || []
+      if (Array.isArray(data)) {
+        empleados.value = data
+      } else if (data && Array.isArray(data.rows)) {
+        empleados.value = data.rows
+      } else {
+        empleados.value = []
+      }
     }
   } catch (err) {
     console.error('Error al cargar empleados:', err)
@@ -277,5 +284,14 @@ async function deleteEmpleado(row) {
 
 onMounted(() => {
   fetchEmpleados()
+  if (typeof window !== 'undefined') {
+    window.addEventListener('qi-offline-mutation', fetchEmpleados)
+  }
+})
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('qi-offline-mutation', fetchEmpleados)
+  }
 })
 </script>
