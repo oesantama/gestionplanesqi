@@ -72,183 +72,154 @@
     </div>
 
     <!-- Tabla Principal de Capacitaciones -->
-    <q-card class="qi-card">
-      <div class="row items-center justify-between q-pa-md gap-md">
-        <div class="row items-center q-gutter-x-sm col-12 col-md-6">
-          <q-input
-            v-model="filterText"
-            dense
-            outlined
-            dark
-            color="primary"
-            placeholder="Buscar por tema o título..."
-            class="col"
-            clearable
-          >
-            <template #prepend>
-              <q-icon name="search" color="primary" />
-            </template>
-          </q-input>
+    <QiTable
+      title="Capacitaciones Operadora"
+      :rows="filteredCapacitaciones"
+      :columns="columns"
+      row-key="id"
+      :loading="loading"
+      export-filename="capacitaciones_operadora"
+      placeholder="Buscar por tema, título, creador..."
+      no-data-label="No se encontraron capacitaciones registradas"
+    >
+      <template #top-actions>
+        <q-select
+          v-model="filterEstado"
+          :options="estadoFilterOptions"
+          emit-value
+          map-options
+          dense
+          outlined
+          dark
+          color="primary"
+          style="min-width: 170px;"
+        />
+      </template>
 
-          <q-select
-            v-model="filterEstado"
-            :options="estadoFilterOptions"
-            emit-value
-            map-options
-            dense
-            outlined
-            dark
-            color="primary"
-            style="min-width: 170px;"
-          />
+      <!-- Columna Título y Descripción -->
+      <template #body-cell-titulo="props">
+        <q-td :props="props">
+          <div class="text-weight-bold text-white text-subtitle2">{{ props.row.titulo }}</div>
+          <div class="text-caption text-grey-4 ellipsis-2-lines" style="max-width: 350px;">
+            {{ props.row.descripcion || 'Sin descripción adicional' }}
+          </div>
+        </q-td>
+      </template>
 
-          <q-btn
-            color="positive"
-            icon="file_download"
-            label="Exportar Excel"
-            no-caps
-            unelevated
+      <!-- Columna Fechas -->
+      <template #body-cell-fechas="props">
+        <q-td :props="props">
+          <div class="text-caption text-grey-3">
+            <q-icon name="event" color="primary" class="q-mr-xs" />
+            Realización: <span class="text-white text-weight-bold">{{ formatDate(props.row.fecha_realizacion) }}</span>
+          </div>
+          <div v-if="props.row.fecha_finalizacion" class="text-caption text-grey-4">
+            <q-icon name="event_available" color="positive" class="q-mr-xs" />
+            Finalización: {{ formatDate(props.row.fecha_finalizacion) }}
+          </div>
+        </q-td>
+      </template>
+
+      <!-- Columna Creado Por -->
+      <template #body-cell-creador="props">
+        <q-td :props="props" align="center">
+          <q-chip color="secondary" text-color="primary" size="sm" class="text-weight-bold">
+            <q-icon name="person" size="14px" class="q-mr-xs" />
+            {{ props.row.creador_nombre || props.row.creador_username || 'Sistema' }}
+          </q-chip>
+        </q-td>
+      </template>
+
+      <!-- Columna Participantes -->
+      <template #body-cell-participantes="props">
+        <q-td :props="props" align="center">
+          <q-badge color="grey-8" text-color="white" class="text-weight-bold q-px-sm q-py-xs">
+            <q-icon name="groups" size="14px" class="q-mr-xs" />
+            {{ props.row.total_participantes }} Participantes
+          </q-badge>
+        </q-td>
+      </template>
+
+      <!-- Columna Estado -->
+      <template #body-cell-estado="props">
+        <q-td :props="props" align="center">
+          <q-chip
+            v-if="props.row.estado === 1"
+            color="warning"
+            text-color="dark"
+            size="xs"
             class="text-weight-bold"
-            @click="exportExcel"
-          />
-        </div>
-      </div>
+          >
+            ⚡ PROGRAMADA
+          </q-chip>
+          <q-chip
+            v-else-if="props.row.estado === 2"
+            color="primary"
+            text-color="dark"
+            size="xs"
+            class="text-weight-bold"
+          >
+            ▶ EN CURSO
+          </q-chip>
+          <q-chip
+            v-else-if="props.row.estado === 3"
+            color="positive"
+            text-color="dark"
+            size="xs"
+            class="text-weight-bold"
+          >
+            ✓ FINALIZADA
+          </q-chip>
+          <q-chip
+            v-else
+            color="grey-8"
+            text-color="white"
+            size="xs"
+            class="text-weight-bold"
+          >
+            INACTIVA
+          </q-chip>
+        </q-td>
+      </template>
 
-      <q-table
-        :rows="filteredCapacitaciones"
-        :columns="columns"
-        row-key="id"
-        dark
-        flat
-        dense
-        :loading="loading"
-        no-data-label="No se encontraron capacitaciones registradas"
-      >
-        <!-- Columna Título y Descripción -->
-        <template #body-cell-titulo="props">
-          <q-td :props="props">
-            <div class="text-weight-bold text-white text-subtitle2">{{ props.row.titulo }}</div>
-            <div class="text-caption text-grey-4 ellipsis-2-lines" style="max-width: 350px;">
-              {{ props.row.descripcion || 'Sin descripción adicional' }}
-            </div>
-          </q-td>
-        </template>
-
-        <!-- Columna Fechas -->
-        <template #body-cell-fechas="props">
-          <q-td :props="props">
-            <div class="text-caption text-grey-3">
-              <q-icon name="event" color="primary" class="q-mr-xs" />
-              Realización: <span class="text-white text-weight-bold">{{ formatDate(props.row.fecha_realizacion) }}</span>
-            </div>
-            <div v-if="props.row.fecha_finalizacion" class="text-caption text-grey-4">
-              <q-icon name="event_available" color="positive" class="q-mr-xs" />
-              Finalización: {{ formatDate(props.row.fecha_finalizacion) }}
-            </div>
-          </q-td>
-        </template>
-
-        <!-- Columna Creado Por -->
-        <template #body-cell-creador="props">
-          <q-td :props="props" align="center">
-            <q-chip color="secondary" text-color="primary" size="sm" class="text-weight-bold">
-              <q-icon name="person" size="14px" class="q-mr-xs" />
-              {{ props.row.creador_nombre || props.row.creador_username || 'Sistema' }}
-            </q-chip>
-          </q-td>
-        </template>
-
-        <!-- Columna Participantes -->
-        <template #body-cell-participantes="props">
-          <q-td :props="props" align="center">
-            <q-badge color="grey-8" text-color="white" class="text-weight-bold q-px-sm q-py-xs">
-              <q-icon name="groups" size="14px" class="q-mr-xs" />
-              {{ props.row.total_participantes }} Participantes
-            </q-badge>
-          </q-td>
-        </template>
-
-        <!-- Columna Estado -->
-        <template #body-cell-estado="props">
-          <q-td :props="props" align="center">
-            <q-chip
-              v-if="props.row.estado === 1"
+      <!-- Columna Acciones -->
+      <template #body-cell-acciones="props">
+        <q-td :props="props" align="center">
+          <div class="row items-center justify-center q-gutter-x-xs">
+            <q-btn
+              flat
+              round
+              dense
+              icon="visibility"
+              color="info"
+              @click="openViewDialog(props.row)"
+            >
+              <q-tooltip>Ver Detalle Informativo</q-tooltip>
+            </q-btn>
+            <q-btn
+              flat
+              round
+              dense
+              icon="edit"
               color="warning"
-              text-color="dark"
-              size="xs"
-              class="text-weight-bold"
+              @click="openEditDialog(props.row)"
             >
-              ⚡ PROGRAMADA
-            </q-chip>
-            <q-chip
-              v-else-if="props.row.estado === 2"
-              color="primary"
-              text-color="dark"
-              size="xs"
-              class="text-weight-bold"
+              <q-tooltip>Editar Capacitación</q-tooltip>
+            </q-btn>
+            <q-btn
+              flat
+              round
+              dense
+              icon="delete"
+              color="negative"
+              @click="confirmDelete(props.row)"
             >
-              ▶ EN CURSO
-            </q-chip>
-            <q-chip
-              v-else-if="props.row.estado === 3"
-              color="positive"
-              text-color="dark"
-              size="xs"
-              class="text-weight-bold"
-            >
-              ✓ FINALIZADA
-            </q-chip>
-            <q-chip
-              v-else
-              color="grey-8"
-              text-color="white"
-              size="xs"
-              class="text-weight-bold"
-            >
-              INACTIVA
-            </q-chip>
-          </q-td>
-        </template>
-
-        <!-- Columna Acciones -->
-        <template #body-cell-acciones="props">
-          <q-td :props="props" align="center">
-            <div class="row items-center justify-center q-gutter-x-xs">
-              <q-btn
-                flat
-                round
-                dense
-                icon="visibility"
-                color="info"
-                @click="openViewDialog(props.row)"
-              >
-                <q-tooltip>Ver Detalle Informativo</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                round
-                dense
-                icon="edit"
-                color="warning"
-                @click="openEditDialog(props.row)"
-              >
-                <q-tooltip>Editar Capacitación</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                round
-                dense
-                icon="delete"
-                color="negative"
-                @click="confirmDelete(props.row)"
-              >
-                <q-tooltip>Eliminar</q-tooltip>
-              </q-btn>
-            </div>
-          </q-td>
-        </template>
-      </q-table>
-    </q-card>
+              <q-tooltip>Eliminar</q-tooltip>
+            </q-btn>
+          </div>
+        </q-td>
+      </template>
+    </QiTable>
 
     <!-- MODAL CREAR / EDITAR CAPACITACIÓN -->
     <q-dialog v-model="formDialog" persistent max-width="800px" style="width: 100%;">
@@ -643,6 +614,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api'
 import { exportTableToExcel } from '../utils/exportExcel'
+import QiTable from '../components/QiTable.vue'
 
 const $q = useQuasar()
 

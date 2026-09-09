@@ -20,80 +20,48 @@
     </div>
 
     <!-- Tabla -->
-    <q-card class="qi-card">
-      <q-table
-        :rows="mensajes"
-        :columns="columns"
-        :filter="filter"
-        row-key="id_mensaje"
-        dark
-        flat
-        :loading="loading"
-        no-data-label="No hay mensajes registrados"
-      >
-        <template #top>
-          <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
-            <div class="text-subtitle1 text-weight-bold text-white">Comunicados e Informativos</div>
-            <div class="row items-center q-gutter-sm">
-              <q-input
-                v-model="filter"
-                outlined
-                dark
-                dense
-                placeholder="Buscar comunicado..."
-                color="primary"
-                style="min-width: 250px;"
-              >
-                <template #append>
-                  <q-icon name="search" color="primary" />
-                  <q-icon v-if="filter" name="close" class="cursor-pointer" @click="filter = ''" />
-                </template>
-              </q-input>
-              <q-btn
-                color="positive"
-                icon="file_download"
-                label="Exportar a Excel"
-                no-caps
-                unelevated
-                class="text-weight-bold"
-                @click="exportExcel"
-              />
-            </div>
-          </div>
-        </template>
-        <template #body-cell-Name="props">
-          <q-td :props="props" class="row items-center">
-            <q-icon :name="props.row.Name || 'chat'" color="primary" size="20px" class="q-mr-sm" />
-            <span class="text-weight-bold">{{ props.row.Name }}</span>
-          </q-td>
-        </template>
+    <QiTable
+      title="Comunicados e Informativos"
+      :rows="mensajes"
+      :columns="columns"
+      row-key="id_mensaje"
+      :loading="loading"
+      export-filename="comunicados_plataforma_qi"
+      placeholder="Buscar comunicado..."
+      no-data-label="No hay mensajes registrados"
+    >
+      <template #body-cell-Name="props">
+        <q-td :props="props" class="row items-center">
+          <q-icon :name="props.row.Name || 'chat'" color="primary" size="20px" class="q-mr-sm" />
+          <span class="text-weight-bold">{{ props.row.Name }}</span>
+        </q-td>
+      </template>
 
-        <template #body-cell-Estado="props">
-          <q-td :props="props">
-            <q-chip
-              :color="props.row.Estado === 1 ? 'positive' : 'grey-8'"
-              text-color="white"
-              dense
-              size="sm"
-              class="text-weight-bold"
-            >
-              {{ props.row.Estado === 1 ? 'ACTIVO' : 'INACTIVO' }}
-            </q-chip>
-          </q-td>
-        </template>
+      <template #body-cell-Estado="props">
+        <q-td :props="props">
+          <q-chip
+            :color="props.row.Estado === 1 ? 'positive' : 'grey-8'"
+            text-color="white"
+            dense
+            size="sm"
+            class="text-weight-bold"
+          >
+            {{ props.row.Estado === 1 ? 'ACTIVO' : 'INACTIVO' }}
+          </q-chip>
+        </q-td>
+      </template>
 
-        <template #body-cell-acciones="props">
-          <q-td :props="props" align="center">
-            <q-btn flat round dense icon="edit" color="primary" @click="openEditDialog(props.row)">
-              <q-tooltip>Editar Mensaje</q-tooltip>
-            </q-btn>
-            <q-btn flat round dense icon="delete" color="negative" @click="deleteMensaje(props.row)">
-              <q-tooltip>Eliminar Mensaje</q-tooltip>
-            </q-btn>
-          </q-td>
-        </template>
-      </q-table>
-    </q-card>
+      <template #body-cell-acciones="props">
+        <q-td :props="props" align="center">
+          <q-btn flat round dense icon="edit" color="primary" @click="openEditDialog(props.row)">
+            <q-tooltip>Editar Mensaje</q-tooltip>
+          </q-btn>
+          <q-btn flat round dense icon="delete" color="negative" @click="deleteMensaje(props.row)">
+            <q-tooltip>Eliminar Mensaje</q-tooltip>
+          </q-btn>
+        </q-td>
+      </template>
+    </QiTable>
 
     <!-- Modal Formulario -->
     <q-dialog v-model="dialogOpen" persistent>
@@ -134,6 +102,7 @@ import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api.js'
 import { exportTableToExcel } from '../utils/exportExcel.js'
+import QiTable from '../components/QiTable.vue'
 
 const $q = useQuasar()
 

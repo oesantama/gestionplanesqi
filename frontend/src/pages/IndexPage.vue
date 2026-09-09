@@ -312,48 +312,16 @@
       </div>
 
       <!-- TABLA DETALLADA MATRIZ DE CUMPLIMIENTO -->
-      <q-card class="qi-card q-mt-lg">
-        <q-table
+      <div class="q-mt-lg">
+        <QiTable
+          title="Matriz Consolidada de Consumo de Planes"
           :rows="displayedEmpresas"
           :columns="columns"
-          :filter="tableFilter"
           row-key="id_empresa"
-          dark
-          flat
-          dense
+          export-filename="matriz_consumo_planes_qi"
+          placeholder="Buscar empresa, plan o DB..."
           no-data-label="No hay métricas registradas"
         >
-          <template #top>
-            <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
-              <div class="text-h6 text-weight-bold text-white">Matriz Consolidada de Consumo de Planes</div>
-              <div class="row items-center q-gutter-sm">
-                <q-input
-                  v-model="tableFilter"
-                  outlined
-                  dark
-                  dense
-                  placeholder="Buscar empresa, plan..."
-                  color="primary"
-                  style="min-width: 260px;"
-                >
-                  <template #append>
-                    <q-icon name="search" color="primary" />
-                    <q-icon v-if="tableFilter" name="close" class="cursor-pointer" @click="tableFilter = ''" />
-                  </template>
-                </q-input>
-
-                <q-btn
-                  color="positive"
-                  icon="file_download"
-                  label="Exportar a Excel"
-                  no-caps
-                  unelevated
-                  class="text-weight-bold"
-                  @click="exportDashboardExcel"
-                />
-              </div>
-            </div>
-          </template>
           <template #body-cell-empresa="props">
             <q-td :props="props">
               <div class="row items-center no-wrap">
@@ -392,10 +360,15 @@
 
           <template #body-cell-vehiculos="props">
             <q-td :props="props" align="center">
-              <span class="text-weight-bold" :class="props.row.real.vehiculos_activos > props.row.plan.vh_hasta ? 'text-negative' : 'text-white'">
-                {{ props.row.real.vehiculos_activos }} / {{ props.row.plan.vh_hasta }}
-              </span>
-              <div class="text-caption text-grey-5">({{ props.row.cumplimiento.porc_vehiculos }}%)</div>
+              <div class="text-weight-bold text-white">
+                {{ props.row.real.vehiculos_activos }} <span class="text-grey-5">/ {{ props.row.plan.vh_hasta || '∞' }}</span>
+              </div>
+              <q-linear-progress
+                :value="Math.min(props.row.cumplimiento.porc_vehiculos / 100, 1)"
+                :color="props.row.cumplimiento.porc_vehiculos > 100 ? 'negative' : props.row.cumplimiento.porc_vehiculos >= 85 ? 'warning' : 'primary'"
+                size="4px"
+                class="q-mt-xs"
+              />
             </q-td>
           </template>
 
@@ -407,28 +380,38 @@
 
           <template #body-cell-inspecciones="props">
             <q-td :props="props" align="center">
-              <span class="text-weight-bold" :class="props.row.real.inspecciones_mes > props.row.plan.max_inspecciones ? 'text-negative' : 'text-white'">
-                {{ props.row.real.inspecciones_mes }} / {{ props.row.plan.max_inspecciones }}
-              </span>
-              <div class="text-caption text-grey-5">({{ props.row.cumplimiento.porc_inspecciones }}%)</div>
+              <div class="text-weight-bold text-white">
+                {{ props.row.real.inspecciones_mes }} <span class="text-grey-5">/ {{ props.row.plan.max_inspecciones || '∞' }}</span>
+              </div>
+              <q-linear-progress
+                :value="Math.min(props.row.cumplimiento.porc_inspecciones / 100, 1)"
+                :color="props.row.cumplimiento.porc_inspecciones > 100 ? 'negative' : props.row.cumplimiento.porc_inspecciones >= 85 ? 'warning' : 'primary'"
+                size="4px"
+                class="q-mt-xs"
+              />
             </q-td>
           </template>
 
           <template #body-cell-capacitaciones="props">
             <q-td :props="props" align="center">
-              <span class="text-weight-bold" :class="props.row.real.capacitaciones_mes > props.row.plan.max_capacitaciones ? 'text-negative' : 'text-white'">
-                {{ props.row.real.capacitaciones_mes }} / {{ props.row.plan.max_capacitaciones }}
-              </span>
-              <div class="text-caption text-grey-5">({{ props.row.cumplimiento.porc_capacitaciones }}%)</div>
+              <div class="text-weight-bold text-white">
+                {{ props.row.real.capacitaciones_mes }} <span class="text-grey-5">/ {{ props.row.plan.max_capacitaciones || '∞' }}</span>
+              </div>
+              <q-linear-progress
+                :value="Math.min(props.row.cumplimiento.porc_capacitaciones / 100, 1)"
+                :color="props.row.cumplimiento.porc_capacitaciones > 100 ? 'negative' : props.row.cumplimiento.porc_capacitaciones >= 85 ? 'warning' : 'primary'"
+                size="4px"
+                class="q-mt-xs"
+              />
             </q-td>
           </template>
 
           <template #body-cell-estado="props">
             <q-td :props="props" align="center">
               <q-chip
-                v-if="props.row.estado_empresa === 0 || props.row.cumplimiento.estado_consumo === 'INACTIVA'"
+                v-if="props.row.estado_empresa === 0"
                 color="grey-8"
-                text-color="white"
+                text-color="grey-4"
                 size="xs"
                 class="text-weight-bold"
               >
@@ -463,8 +446,8 @@
               </q-chip>
             </q-td>
           </template>
-        </q-table>
-      </q-card>
+        </QiTable>
+      </div>
     </div>
   </q-page>
 </template>

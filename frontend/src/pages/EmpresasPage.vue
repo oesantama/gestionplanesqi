@@ -19,93 +19,57 @@
       />
     </div>
 
-    <!-- Filtros y Búsqueda -->
-    <q-card class="qi-card q-pa-md q-mb-md">
-      <div class="row items-center justify-between q-col-gutter-md">
-        <div class="col-12 col-md-6">
-          <q-input
-            v-model="filter"
-            outlined
-            dark
-            dense
-            placeholder="Buscar por Razón Social, Nombre QI, URL o Base de Datos..."
-            color="primary"
-            @update:model-value="fetchEmpresas"
-          >
-            <template #prepend>
-              <q-icon name="search" color="primary" />
-            </template>
-            <template #append v-if="filter">
-              <q-icon name="close" class="cursor-pointer" @click="filter = ''; fetchEmpresas()" />
-            </template>
-          </q-input>
-        </div>
-        <div class="col-12 col-md-auto">
-          <q-btn
-            color="positive"
-            icon="file_download"
-            label="Exportar a Excel"
-            no-caps
-            unelevated
-            class="text-weight-bold"
-            @click="exportExcel"
-          />
-        </div>
-      </div>
-    </q-card>
-
     <!-- Tabla -->
-    <q-card class="qi-card">
-      <q-table
-        :rows="empresas"
-        :columns="columns"
-        row-key="Id_empresa"
-        dark
-        flat
-        :loading="loading"
-        no-data-label="No se encontraron empresas registradas"
-      >
-        <template #body-cell-estado="props">
-          <q-td :props="props">
-            <q-chip
-              :color="props.row.estado === 1 ? 'positive' : 'grey-8'"
-              text-color="white"
-              dense
-              size="sm"
-              class="text-weight-bold"
-            >
-              {{ props.row.estado === 1 ? 'ACTIVA' : 'INACTIVA' }}
-            </q-chip>
-          </q-td>
-        </template>
+    <QiTable
+      title="Directorio de Empresas"
+      :rows="empresas"
+      :columns="columns"
+      row-key="Id_empresa"
+      :loading="loading"
+      export-filename="directorio_empresas_qi"
+      placeholder="Buscar por Razón Social, Nombre QI, URL..."
+      no-data-label="No se encontraron empresas registradas"
+    >
+      <template #body-cell-estado="props">
+        <q-td :props="props">
+          <q-chip
+            :color="props.row.estado === 1 ? 'positive' : 'grey-8'"
+            text-color="white"
+            dense
+            size="sm"
+            class="text-weight-bold"
+          >
+            {{ props.row.estado === 1 ? 'ACTIVA' : 'INACTIVA' }}
+          </q-chip>
+        </q-td>
+      </template>
 
-        <template #body-cell-url_QI="props">
-          <q-td :props="props">
-            <a :href="props.row.url_QI" target="_blank" class="text-primary text-weight-medium text-decoration-none">
-              {{ props.row.url_QI }}
-            </a>
-          </q-td>
-        </template>
+      <template #body-cell-url_QI="props">
+        <q-td :props="props">
+          <a :href="props.row.url_QI" target="_blank" class="text-primary text-weight-medium text-decoration-none">
+            {{ props.row.url_QI }}
+          </a>
+        </q-td>
+      </template>
 
-        <template #body-cell-acciones="props">
-          <q-td :props="props" align="center">
-            <q-btn flat round dense icon="edit" color="primary" @click="openEditDialog(props.row)">
-              <q-tooltip>Editar Empresa</q-tooltip>
-            </q-btn>
-            <q-btn
-              flat
-              round
-              dense
-              :icon="props.row.estado === 1 ? 'toggle_on' : 'toggle_off'"
-              :color="props.row.estado === 1 ? 'positive' : 'grey-5'"
-              @click="toggleEstado(props.row)"
-            >
-              <q-tooltip>{{ props.row.estado === 1 ? 'Desactivar' : 'Activar' }}</q-tooltip>
-            </q-btn>
-          </q-td>
-        </template>
-      </q-table>
-    </q-card>
+      <template #body-cell-acciones="props">
+        <q-td :props="props" align="center">
+          <q-btn flat round dense icon="edit" color="primary" @click="openEditDialog(props.row)">
+            <q-tooltip>Editar Empresa</q-tooltip>
+          </q-btn>
+          <q-btn
+            flat
+            round
+            dense
+            :icon="props.row.estado === 1 ? 'toggle_on' : 'toggle_off'"
+            :color="props.row.estado === 1 ? 'positive' : 'grey-5'"
+            @click="toggleEstado(props.row)"
+          >
+            <q-tooltip>{{ props.row.estado === 1 ? 'Desactivar' : 'Activar' }}</q-tooltip>
+          </q-btn>
+        </q-td>
+      </template>
+    </QiTable>
 
     <!-- Modal Formulario -->
     <q-dialog v-model="dialogOpen" persistent>
@@ -160,6 +124,7 @@ import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api.js'
 import { exportTableToExcel } from '../utils/exportExcel.js'
+import QiTable from '../components/QiTable.vue'
 
 function exportExcel() {
   exportTableToExcel(columns, empresas.value, 'directorio_empresas_qi')

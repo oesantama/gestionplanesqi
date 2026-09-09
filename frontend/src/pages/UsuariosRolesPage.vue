@@ -37,99 +37,67 @@
 
     <!-- CONTENIDO TAB 1: GESTIÓN DE USUARIOS -->
     <div v-if="activeTab === 'usuarios'">
-      <q-card class="qi-card">
-        <q-table
-          :rows="usuarios"
-          :columns="userColumns"
-          :filter="userFilter"
-          row-key="id"
-          dark
-          flat
-          :loading="loadingUsers"
-          no-data-label="No hay usuarios registrados"
-        >
-          <template #top>
-            <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
-              <div class="text-subtitle1 text-weight-bold text-white">Directorio de Usuarios del Sistema</div>
-              <div class="row items-center q-gutter-sm">
-                <q-input
-                  v-model="userFilter"
-                  outlined
-                  dark
-                  dense
-                  placeholder="Buscar usuario, nombre, rol..."
-                  color="primary"
-                  style="min-width: 250px;"
-                >
-                  <template #append>
-                    <q-icon name="search" color="primary" />
-                    <q-icon v-if="userFilter" name="close" class="cursor-pointer" @click="userFilter = ''" />
-                  </template>
-                </q-input>
-                <q-btn
-                  color="positive"
-                  icon="file_download"
-                  label="Exportar a Excel"
-                  no-caps
-                  unelevated
-                  class="text-weight-bold"
-                  @click="exportUserExcel"
-                />
-              </div>
-            </div>
-          </template>
-          <template #body-cell-estado="props">
-            <q-td :props="props">
-              <q-chip
-                v-if="props.row.estado === 2 || (props.row.bloqueado_hasta && new Date(props.row.bloqueado_hasta) > new Date())"
-                color="negative"
-                text-color="white"
-                dense
-                size="sm"
-                class="text-weight-bold"
-              >
-                BLOQUEADO (5 INTENTOS)
-              </q-chip>
-              <q-chip
-                v-else
-                :color="props.row.estado === 1 ? 'positive' : 'grey-8'"
-                text-color="white"
-                dense
-                size="sm"
-                class="text-weight-bold"
-              >
-                {{ props.row.estado === 1 ? 'ACTIVO' : 'INACTIVO' }}
-              </q-chip>
-            </q-td>
-          </template>
+      <QiTable
+        title="Directorio de Usuarios del Sistema"
+        :rows="usuarios"
+        :columns="userColumns"
+        row-key="id"
+        :loading="loadingUsers"
+        export-filename="usuarios_sistema_qi"
+        placeholder="Buscar usuario, nombre, rol..."
+        no-data-label="No hay usuarios registrados"
+      >
+        <template #body-cell-estado="props">
+          <q-td :props="props">
+            <q-chip
+              v-if="props.row.estado === 2 || (props.row.bloqueado_hasta && new Date(props.row.bloqueado_hasta) > new Date())"
+              color="negative"
+              text-color="white"
+              dense
+              size="sm"
+              class="text-weight-bold"
+            >
+              BLOQUEADO (5 INTENTOS)
+            </q-chip>
+            <q-chip
+              v-else
+              :color="props.row.estado === 1 ? 'positive' : 'grey-8'"
+              text-color="white"
+              dense
+              size="sm"
+              class="text-weight-bold"
+            >
+              {{ props.row.estado === 1 ? 'ACTIVO' : 'INACTIVO' }}
+            </q-chip>
+          </q-td>
+        </template>
 
-          <template #body-cell-ultimo_login="props">
-            <q-td :props="props">
-              {{ formatDateTime(props.row.ultimo_login) }}
-            </q-td>
-          </template>
+        <template #body-cell-ultimo_login="props">
+          <q-td :props="props">
+            {{ formatDateTime(props.row.ultimo_login) }}
+          </q-td>
+        </template>
 
-          <template #body-cell-acciones="props">
-            <q-td :props="props" align="center">
-              <q-btn
-                v-if="props.row.estado === 2 || (props.row.bloqueado_hasta && new Date(props.row.bloqueado_hasta) > new Date())"
-                flat
-                round
-                dense
-                icon="lock_open"
-                color="warning"
-                @click="unblockUser(props.row)"
-              >
-                <q-tooltip>Desbloquear Cuenta</q-tooltip>
-              </q-btn>
+        <template #body-cell-acciones="props">
+          <q-td :props="props" align="center">
+            <q-btn
+              v-if="props.row.estado === 2 || (props.row.bloqueado_hasta && new Date(props.row.bloqueado_hasta) > new Date())"
+              flat
+              round
+              dense
+              icon="lock_open"
+              color="warning"
+              @click="unblockUser(props.row)"
+            >
+              <q-tooltip>Desbloquear Cuenta</q-tooltip>
+            </q-btn>
 
-              <q-btn flat round dense icon="edit" color="primary" @click="openEditUserDialog(props.row)">
-                <q-tooltip>Editar Usuario</q-tooltip>
-              </q-btn>
-            </q-td>
-          </template>
-        </q-table>
-      </q-card>
+            <q-btn flat round dense icon="edit" color="primary" @click="openEditUserDialog(props.row)">
+              <q-tooltip>Editar Usuario</q-tooltip>
+            </q-btn>
+          </q-td>
+        </template>
+      </QiTable>
     </div>
 
     <!-- CONTENIDO TAB 2: MATRIZ DE PERMISOS POR ROL -->
@@ -442,6 +410,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api.js'
 import { exportTableToExcel } from '../utils/exportExcel.js'
+import QiTable from '../components/QiTable.vue'
 
 const $q = useQuasar()
 

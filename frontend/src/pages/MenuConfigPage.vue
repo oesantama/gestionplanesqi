@@ -41,49 +41,19 @@
 
       <q-separator dark class="q-my-md" />
 
-      <!-- Tab 1: Menús Principales (Nivel 1) -->
+      <!-- Tab Panels for Levels -->
       <q-tab-panels v-model="activeTab" animated class="bg-transparent text-white">
+        <!-- Tab 1: Menús Principales (Nivel 1) -->
         <q-tab-panel name="menus" class="q-pa-none">
-          <q-table
-            dark
-            flat
-            bordered
+          <QiTable
+            title="Menús Principales"
             :rows="adminData.menus"
             :columns="columnsMenu"
-            :filter="menuFilter"
             row-key="id"
-            class="bg-dark qi-card"
+            export-filename="menus_nivel1_qi"
+            placeholder="Buscar menú..."
+            no-data-label="No hay menús principales registrados"
           >
-            <template #top>
-              <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
-                <div class="text-subtitle1 text-weight-bold text-white">Menús Principales</div>
-                <div class="row items-center q-gutter-sm">
-                  <q-input
-                    v-model="menuFilter"
-                    outlined
-                    dark
-                    dense
-                    placeholder="Buscar menú..."
-                    color="primary"
-                    style="min-width: 220px;"
-                  >
-                    <template #append>
-                      <q-icon name="search" color="primary" />
-                      <q-icon v-if="menuFilter" name="close" class="cursor-pointer" @click="menuFilter = ''" />
-                    </template>
-                  </q-input>
-                  <q-btn
-                    color="positive"
-                    icon="file_download"
-                    label="Exportar Excel"
-                    no-caps
-                    unelevated
-                    class="text-weight-bold"
-                    @click="exportExcel('menus')"
-                  />
-                </div>
-              </div>
-            </template>
             <template #body-cell-icono="props">
               <q-td :props="props">
                 <q-icon :name="props.value || 'circle'" color="primary" size="20px" />
@@ -105,51 +75,20 @@
                 </q-badge>
               </q-td>
             </template>
-          </q-table>
+          </QiTable>
         </q-tab-panel>
 
         <!-- Tab 2: Submenús (Nivel 2) -->
         <q-tab-panel name="submenus" class="q-pa-none">
-          <q-table
-            dark
-            flat
-            bordered
+          <QiTable
+            title="Submenús de Nivel 2"
             :rows="adminData.submenus"
             :columns="columnsSubmenu"
-            :filter="menuFilter"
             row-key="id"
-            class="bg-dark qi-card"
+            export-filename="submenus_nivel2_qi"
+            placeholder="Buscar submenú..."
+            no-data-label="No hay submenús registrados"
           >
-            <template #top>
-              <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
-                <div class="text-subtitle1 text-weight-bold text-white">Submenús de Nivel 2</div>
-                <div class="row items-center q-gutter-sm">
-                  <q-input
-                    v-model="menuFilter"
-                    outlined
-                    dark
-                    dense
-                    placeholder="Buscar submenú..."
-                    color="primary"
-                    style="min-width: 220px;"
-                  >
-                    <template #append>
-                      <q-icon name="search" color="primary" />
-                      <q-icon v-if="menuFilter" name="close" class="cursor-pointer" @click="menuFilter = ''" />
-                    </template>
-                  </q-input>
-                  <q-btn
-                    color="positive"
-                    icon="file_download"
-                    label="Exportar Excel"
-                    no-caps
-                    unelevated
-                    class="text-weight-bold"
-                    @click="exportExcel('submenus')"
-                  />
-                </div>
-              </div>
-            </template>
             <template #body-cell-icono="props">
               <q-td :props="props">
                 <q-icon :name="props.value || 'navigate_next'" color="primary" size="20px" />
@@ -171,51 +110,20 @@
                 </q-badge>
               </q-td>
             </template>
-          </q-table>
+          </QiTable>
         </q-tab-panel>
 
         <!-- Tab 3: Pestañas / Tabs (Nivel 3) -->
         <q-tab-panel name="tabs" class="q-pa-none">
-          <q-table
-            dark
-            flat
-            bordered
+          <QiTable
+            title="Tabs y Subsecciones"
             :rows="adminData.tabs"
             :columns="columnsTabs"
-            :filter="menuFilter"
             row-key="id"
-            class="bg-dark qi-card"
+            export-filename="tabs_nivel3_qi"
+            placeholder="Buscar tab..."
+            no-data-label="No hay tabs registrados"
           >
-            <template #top>
-              <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
-                <div class="text-subtitle1 text-weight-bold text-white">Tabs y Subsecciones</div>
-                <div class="row items-center q-gutter-sm">
-                  <q-input
-                    v-model="menuFilter"
-                    outlined
-                    dark
-                    dense
-                    placeholder="Buscar tab..."
-                    color="primary"
-                    style="min-width: 220px;"
-                  >
-                    <template #append>
-                      <q-icon name="search" color="primary" />
-                      <q-icon v-if="menuFilter" name="close" class="cursor-pointer" @click="menuFilter = ''" />
-                    </template>
-                  </q-input>
-                  <q-btn
-                    color="positive"
-                    icon="file_download"
-                    label="Exportar Excel"
-                    no-caps
-                    unelevated
-                    class="text-weight-bold"
-                    @click="exportExcel('tabs')"
-                  />
-                </div>
-              </div>
-            </template>
             <template #body-cell-icono="props">
               <q-td :props="props">
                 <q-icon :name="props.value || 'tab'" color="primary" size="20px" />
@@ -237,7 +145,7 @@
                 </q-badge>
               </q-td>
             </template>
-          </q-table>
+          </QiTable>
         </q-tab-panel>
       </q-tab-panels>
     </div>
@@ -249,6 +157,7 @@ import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api'
 import { exportTableToExcel } from '../utils/exportExcel.js'
+import QiTable from '../components/QiTable.vue'
 
 const $q = useQuasar()
 const activeTab = ref('menus')

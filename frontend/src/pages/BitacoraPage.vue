@@ -8,73 +8,39 @@
       </div>
     </div>
 
-    <!-- Filtros y Búsqueda -->
-    <q-card class="qi-card q-pa-md q-mb-md">
-      <div class="row items-center justify-between q-col-gutter-md">
-        <div class="col-12 col-md-6">
-          <q-input
-            v-model="filter"
-            outlined
-            dark
+    <!-- Tabla de Bitácora -->
+    <QiTable
+      title="Bitácora de Auditoría"
+      :rows="logs"
+      :columns="columns"
+      row-key="id"
+      :loading="loading"
+      export-filename="bitacora_seguridad_qi"
+      placeholder="Buscar por Usuario, Evento o Dirección IP..."
+      no-data-label="No hay registros en la bitácora"
+      v-model:filter="filter"
+      @request="fetchBitacora"
+    >
+      <template #body-cell-evento="props">
+        <q-td :props="props">
+          <q-chip
+            :color="getEventColor(props.row.evento)"
+            text-color="white"
             dense
-            placeholder="Buscar por Usuario, Evento o Dirección IP..."
-            color="primary"
-            @update:model-value="fetchBitacora"
-          >
-            <template #prepend>
-              <q-icon name="search" color="primary" />
-            </template>
-            <template #append v-if="filter">
-              <q-icon name="close" class="cursor-pointer" @click="filter = ''; fetchBitacora()" />
-            </template>
-          </q-input>
-        </div>
-        <div class="col-12 col-md-auto">
-          <q-btn
-            color="positive"
-            icon="file_download"
-            label="Exportar a Excel"
-            no-caps
-            unelevated
+            size="sm"
             class="text-weight-bold"
-            @click="exportExcel"
-          />
-        </div>
-      </div>
-    </q-card>
+          >
+            {{ props.row.evento }}
+          </q-chip>
+        </q-td>
+      </template>
 
-    <!-- Tabla -->
-    <q-card class="qi-card">
-      <q-table
-        :rows="logs"
-        :columns="columns"
-        row-key="id"
-        dark
-        flat
-        :loading="loading"
-        no-data-label="No hay registros en la bitácora"
-      >
-        <template #body-cell-evento="props">
-          <q-td :props="props">
-            <q-chip
-              :color="getEventColor(props.row.evento)"
-              text-color="white"
-              dense
-              size="sm"
-              class="text-weight-bold"
-            >
-              {{ props.row.evento }}
-            </q-chip>
-          </q-td>
-        </template>
-
-        <template #body-cell-fecha="props">
-          <q-td :props="props">
-            {{ formatDateTime(props.row.fecha) }}
-          </q-td>
-        </template>
-      </q-table>
-    </q-card>
+      <template #body-cell-fecha="props">
+        <q-td :props="props">
+          {{ formatDateTime(props.row.fecha) }}
+        </q-td>
+      </template>
+    </QiTable>
   </q-page>
 </template>
 
@@ -82,6 +48,7 @@
 import { ref, onMounted } from 'vue'
 import { apiFetch } from '../services/api.js'
 import { exportTableToExcel } from '../utils/exportExcel.js'
+import QiTable from '../components/QiTable.vue'
 
 function exportExcel() {
   exportTableToExcel(columns, logs.value, 'bitacora_seguridad_qi')

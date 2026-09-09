@@ -1,4 +1,4 @@
-// Qinspecting Custom Scss Styles
+// Qinspecting Custom Scss Styles & Unified Design System
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
@@ -32,13 +32,35 @@ body {
   }
 }
 
+.border-glow {
+  border: 1px solid rgba(0, 210, 106, 0.4);
+  box-shadow: 0 0 15px rgba(0, 210, 106, 0.15);
+}
+
 .qi-brand-text {
   background: linear-gradient(135deg, #00D26A 0%, #34D399 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Inputs styling */
+/* Typography & Layout Helpers */
+.leading-tight {
+  line-height: 1.2;
+}
+
+.rounded-borders {
+  border-radius: 8px;
+}
+
+.no-underline {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Quasar Form Inputs styling */
 .q-field--outlined .q-field__control {
   border-radius: 10px;
   background: rgba(15, 41, 30, 0.4) !important;
@@ -62,8 +84,8 @@ body {
 ::-webkit-scrollbar-thumb {
   background: #163A2B;
   border-radius: 4px;
-}
 
-::-webkit-scrollbar-thumb:hover {
-  background: #00D26A;
+  &:hover {
+    background: #00D26A;
+  }
 }
