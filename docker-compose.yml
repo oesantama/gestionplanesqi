@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.dev
+    container_name: gestionplanesqi-api
+    volumes:
+      - ./api:/app:z
+    ports:
+      - "3060:3060"
+    environment:
+      - PORT=3060
+      - DB_HOST=${DB_HOST:-162.240.237.6}
+      - DB_USER=${DB_USER:-qinspect_admin}
+      - DB_PASSWORD=${DB_PASSWORD:-H0m0pt3r0L3A*}
+      - DB_NAME=${DB_NAME:-qinspect_planesQi}
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: gestionplanesqi-frontend
+    tty: true
+    volumes:
+      - ./frontend:/app:z
+    ports:
+      - "8060:80"
+    depends_on:
+      - api
+    restart: unless-stopped

@@ -8,15 +8,6 @@ import {
 
 import routes from './routes.js'
 
-/*
- * If not building with SSR mode, you can
- * directly export the Router instantiation;
- *
- * The function below can be async too; either use
- * async/await or return a Promise which resolves
- * with the Router instance.
- */
-
 export default defineRouter((/* { store, ssrContext } */) => {
   const createHistory = import.meta.env.QUASAR_SERVER
     ? createMemoryHistory
@@ -28,10 +19,24 @@ export default defineRouter((/* { store, ssrContext } */) => {
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
 
-    // Leave this as is and make changes in quasar.conf.js instead!
-    // quasar.conf.js -> build -> vueRouterMode
-    // quasar.conf.js -> build -> publicPath
     history: createHistory(import.meta.env.QUASAR_VUE_ROUTER_BASE)
+  })
+
+  // Protector Global de Navegación (Navigation Guard)
+  // Redirige automáticamente a /login si el usuario no tiene token de sesión válido
+  Router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem('qi_token')
+    const isPublic = to.matched.some(record => record.meta.isPublic) || to.path === '/login' || to.path === '/recuperar-contrasena'
+
+    if (!isPublic && !token) {
+      // Intento de acceso sin autenticación -> Redirigir a /login
+      next('/login')
+    } else if (token && (to.path === '/login' || to.path === '/recuperar-contrasena')) {
+      // Usuario ya autenticado intentando ir a /login -> Redirigir al inicio /
+      next('/')
+    } else {
+      next()
+    }
   })
 
   return Router

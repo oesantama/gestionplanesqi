@@ -40,7 +40,7 @@ export default defineConfig((/* ctx */) => {
       // https://v2.quasar.dev/quasar-cli-vite/page-routing-with-vue-router#filename-based-routing
       // filenameBasedRouting: true,
 
-      vueRouterMode: 'hash' // available values: 'hash', 'history'
+      vueRouterMode: 'history' // available values: 'hash', 'history'
       // vueRouterBase,
 
       // publicPath: '/',
@@ -64,9 +64,9 @@ export default defineConfig((/* ctx */) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
     devServer: {
-      // vueDevtools: true,
-      // https: true,
-      open: true // opens browser window automatically
+      host: '0.0.0.0',
+      port: 80,
+      open: false
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
@@ -84,7 +84,7 @@ export default defineConfig((/* ctx */) => {
       // directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: ['Notify', 'Loading']
     },
 
     // animations: 'all', // --- includes all animations

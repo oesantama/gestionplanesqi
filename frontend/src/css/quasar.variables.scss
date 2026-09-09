@@ -1,25 +1,14 @@
-// Quasar Sass (& SCSS) Variables
+// Quasar Sass (& SCSS) Variables - Qinspecting Theme
 // --------------------------------------------------
-// To customize the look and feel of this app, you can override
-// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
 
-// Check documentation for full list of Quasar variables
+$primary   : #00D26A; // Verde vibrante Qinspecting
+$secondary : #0F291E; // Verde esmeralda oscuro
+$accent    : #F59E0B; // Ámbar de advertencia / inspección
 
-// Your own variables (that are declared here) and Quasar's own
-// ones will be available out of the box in your .vue/.scss/.sass files
+$dark      : #0B1914; // Tarjetas y contenedores oscuros
+$dark-page : #06100C; // Fondo oscuro principal
 
-// It's highly recommended to change the default colors
-// to match your app's branding.
-// Tip: Use the "Theme Builder" on Quasar's documentation website.
-
-$primary: #1976d2;
-$secondary: #26a69a;
-$accent: #9c27b0;
-
-$dark: #1d1d1d;
-$dark-page: #121212;
-
-$positive: #21ba45;
-$negative: #c10015;
-$info: #31ccec;
-$warning: #f2c037;
+$positive  : #10B981; // Verde éxito
+$negative  : #EF4444; // Rojo error
+$info      : #06B6D4; // Azul info
+$warning   : #F59E0B; // Naranja advertencia

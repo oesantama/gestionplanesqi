@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: gestionplanesqi-api-prod
+    ports:
+      - "3060:3060"
+    environment:
+      - PORT=3060
+      - DB_HOST=${DB_HOST:-162.240.237.6}
+      - DB_USER=${DB_USER:-qinspect_admin}
+      - DB_PASSWORD=${DB_PASSWORD:-H0m0pt3r0L3A*}
+      - DB_NAME=${DB_NAME:-qinspect_planesQi}
+      - JWT_SECRET=${JWT_SECRET:-Qinspecting_Secret_ISO27001_BASC_Key_2026_x900}
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gestionplanesqi-frontend-prod
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: always

@@ -1,20 +1,25 @@
 <!doctype html>
 <html>
   <head>
-    <title><%= productName %></title>
+    <title>Qinspecting - Gestión de Planes QI</title>
 
     <meta charset="utf-8" />
-    <meta name="description" content="<%= productDescription %>" />
+    <meta name="description" content="Qinspecting - Checklist electrónicos para flotas que no improvisan" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="theme-color" content="#06100C" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1<% if (ctx.mode.cordova || ctx.mode.capacitor) { %>, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover<% } %>"
     />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';<% if (ctx.dev) { %> connect-src 'self' ws://localhost:*; worker-src 'self' blob:;<% } %>"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; worker-src 'self' blob:;"
     />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <link
       rel="icon"
@@ -42,7 +47,7 @@
     />
     <link rel="icon" type="image/ico" href="favicon.ico" />
   </head>
-  <body>
+  <body class="bg-dark-page text-white">
     <!-- quasar:entry-point -->
   </body>
 </html>

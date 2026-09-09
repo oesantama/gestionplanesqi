@@ -1,0 +1,9 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/USER/public_html
+    - export APIPATH=/home/USER/api_app
+    - /bin/cp -R frontend/dist/spa/* $DEPLOYPATH
+    - /bin/cp -R api/* $APIPATH
+    - /bin/mkdir -p $APIPATH/tmp
+    - /bin/touch $APIPATH/tmp/restart.txt

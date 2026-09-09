@@ -1,0 +1,20 @@
+name: Deploy Planes QI con Docker
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Conectar al Servidor por SSH y Desplegar Docker
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            cd ~/gestionplanesqi || cd /var/www/gestionplanesqi
+            ./scripts/deploy_server.sh
