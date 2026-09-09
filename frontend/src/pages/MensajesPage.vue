@@ -24,12 +24,43 @@
       <q-table
         :rows="mensajes"
         :columns="columns"
+        :filter="filter"
         row-key="id_mensaje"
         dark
         flat
         :loading="loading"
         no-data-label="No hay mensajes registrados"
       >
+        <template #top>
+          <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
+            <div class="text-subtitle1 text-weight-bold text-white">Comunicados e Informativos</div>
+            <div class="row items-center q-gutter-sm">
+              <q-input
+                v-model="filter"
+                outlined
+                dark
+                dense
+                placeholder="Buscar comunicado..."
+                color="primary"
+                style="min-width: 250px;"
+              >
+                <template #append>
+                  <q-icon name="search" color="primary" />
+                  <q-icon v-if="filter" name="close" class="cursor-pointer" @click="filter = ''" />
+                </template>
+              </q-input>
+              <q-btn
+                color="positive"
+                icon="file_download"
+                label="Exportar a Excel"
+                no-caps
+                unelevated
+                class="text-weight-bold"
+                @click="exportExcel"
+              />
+            </div>
+          </div>
+        </template>
         <template #body-cell-Name="props">
           <q-td :props="props" class="row items-center">
             <q-icon :name="props.row.Name || 'chat'" color="primary" size="20px" class="q-mr-sm" />
@@ -102,14 +133,20 @@
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api.js'
+import { exportTableToExcel } from '../utils/exportExcel.js'
 
 const $q = useQuasar()
 
 const mensajes = ref([])
 const loading = ref(false)
+const filter = ref('')
 const dialogOpen = ref(false)
 const isEditing = ref(false)
 const saving = ref(false)
+
+function exportExcel() {
+  exportTableToExcel(columns, mensajes.value, 'comunicados_mensajes_qi')
+}
 
 const form = ref({
   id_mensaje: null,

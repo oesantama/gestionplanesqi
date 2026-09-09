@@ -41,12 +41,43 @@
         <q-table
           :rows="usuarios"
           :columns="userColumns"
+          :filter="userFilter"
           row-key="id"
           dark
           flat
           :loading="loadingUsers"
           no-data-label="No hay usuarios registrados"
         >
+          <template #top>
+            <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
+              <div class="text-subtitle1 text-weight-bold text-white">Directorio de Usuarios del Sistema</div>
+              <div class="row items-center q-gutter-sm">
+                <q-input
+                  v-model="userFilter"
+                  outlined
+                  dark
+                  dense
+                  placeholder="Buscar usuario, nombre, rol..."
+                  color="primary"
+                  style="min-width: 250px;"
+                >
+                  <template #append>
+                    <q-icon name="search" color="primary" />
+                    <q-icon v-if="userFilter" name="close" class="cursor-pointer" @click="userFilter = ''" />
+                  </template>
+                </q-input>
+                <q-btn
+                  color="positive"
+                  icon="file_download"
+                  label="Exportar a Excel"
+                  no-caps
+                  unelevated
+                  class="text-weight-bold"
+                  @click="exportUserExcel"
+                />
+              </div>
+            </div>
+          </template>
           <template #body-cell-estado="props">
             <q-td :props="props">
               <q-chip
@@ -410,6 +441,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api.js'
+import { exportTableToExcel } from '../utils/exportExcel.js'
 
 const $q = useQuasar()
 
@@ -419,9 +451,14 @@ const activeTab = ref('usuarios')
 const usuarios = ref([])
 const roles = ref([])
 const loadingUsers = ref(false)
+const userFilter = ref('')
 const userDialogOpen = ref(false)
 const isEditingUser = ref(false)
 const savingUser = ref(false)
+
+function exportUserExcel() {
+  exportTableToExcel(userColumns, usuarios.value, 'usuarios_sistema_qi')
+}
 
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)

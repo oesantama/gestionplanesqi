@@ -101,6 +101,16 @@
             color="primary"
             style="min-width: 170px;"
           />
+
+          <q-btn
+            color="positive"
+            icon="file_download"
+            label="Exportar Excel"
+            no-caps
+            unelevated
+            class="text-weight-bold"
+            @click="exportExcel"
+          />
         </div>
       </div>
 
@@ -632,6 +642,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api'
+import { exportTableToExcel } from '../utils/exportExcel'
 
 const $q = useQuasar()
 
@@ -715,6 +726,10 @@ const filteredCapacitaciones = computed(() => {
     return matchesText && matchesEstado
   })
 })
+
+function exportExcel() {
+  exportTableToExcel(columns, filteredCapacitaciones.value, 'capacitaciones_operadora')
+}
 
 async function fetchCapacitaciones() {
   loading.value = true

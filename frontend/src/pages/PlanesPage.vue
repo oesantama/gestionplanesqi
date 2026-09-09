@@ -19,9 +19,43 @@
       />
     </div>
 
+    <!-- Filtros y Búsqueda -->
+    <q-card class="qi-card q-pa-md q-mb-md">
+      <div class="row items-center justify-between q-col-gutter-md">
+        <div class="col-12 col-md-6">
+          <q-input
+            v-model="filter"
+            outlined
+            dark
+            dense
+            placeholder="Buscar por Nombre del Plan, Precio o Vehículos..."
+            color="primary"
+          >
+            <template #prepend>
+              <q-icon name="search" color="primary" />
+            </template>
+            <template #append v-if="filter">
+              <q-icon name="close" class="cursor-pointer" @click="filter = ''" />
+            </template>
+          </q-input>
+        </div>
+        <div class="col-12 col-md-auto">
+          <q-btn
+            color="positive"
+            icon="file_download"
+            label="Exportar a Excel"
+            no-caps
+            unelevated
+            class="text-weight-bold"
+            @click="exportExcel"
+          />
+        </div>
+      </div>
+    </q-card>
+
     <!-- Grid de Tarjetas de Planes -->
     <div class="row q-col-gutter-md q-mb-lg">
-      <div v-for="plan in planes" :key="plan.Id_plan" class="col-12 col-sm-6 col-md-4">
+      <div v-for="plan in filteredPlanes" :key="plan.Id_plan" class="col-12 col-sm-6 col-md-4">
         <q-card class="qi-card full-height column justify-between relative-position overflow-hidden" style="border: 1px solid rgba(0, 210, 106, 0.2);">
           <div class="q-pa-md">
             <div class="row items-center justify-between q-mb-sm">
@@ -128,17 +162,44 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api.js'
+import { exportTableToExcel } from '../utils/exportExcel.js'
 
 const $q = useQuasar()
 
 const planes = ref([])
 const loading = ref(false)
+const filter = ref('')
 const dialogOpen = ref(false)
 const isEditing = ref(false)
 const saving = ref(false)
+
+const columns = [
+  { name: 'Id_plan', label: 'ID Plan', field: 'Id_plan' },
+  { name: 'Descripcion', label: 'Nombre Plan', field: 'Descripcion' },
+  { name: 'Precio', label: 'Precio Mensual', field: p => `$${p.Precio}` },
+  { name: 'Vh_desde', label: 'Vehículos Desde', field: 'Vh_desde' },
+  { name: 'Vh_hasta', label: 'Vehículos Hasta', field: 'Vh_hasta' },
+  { name: 'Max_inspecciones', label: 'Max Inspecciones', field: 'Max_inspecciones' },
+  { name: 'Max_capacitaciones', label: 'Max Capacitaciones', field: 'Max_capacitaciones' },
+  { name: 'Estado', label: 'Estado', field: p => p.Estado === 1 ? 'ACTIVO' : 'INACTIVO' }
+]
+
+const filteredPlanes = computed(() => {
+  if (!filter.value) return planes.value
+  const query = filter.value.toLowerCase()
+  return planes.value.filter(p =>
+    (p.Descripcion || '').toLowerCase().includes(query) ||
+    String(p.Precio).includes(query) ||
+    String(p.Vh_hasta).includes(query)
+  )
+})
+
+function exportExcel() {
+  exportTableToExcel(columns, filteredPlanes.value, 'catalogo_planes_qi')
+}
 
 const form = ref({
   Id_plan: null,

@@ -115,4 +115,32 @@ module.exports = (app) => {
       res.status(500).json({ message: "Error al cambiar estado" });
     }
   });
+
+  // GET /api/empresas/logo-proxy - Proxy seguro de imágenes para evitar ORB/CORS/404 en la consola del navegador
+  app.get("/api/empresas/logo-proxy", async (req, res) => {
+    try {
+      const targetUrl = req.query.url;
+      if (!targetUrl || !targetUrl.startsWith("http")) {
+        return res.status(404).send("URL de imagen requerida");
+      }
+
+      const response = await fetch(targetUrl, {
+        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
+      });
+
+      if (!response.ok) {
+        return res.status(404).send("Imagen no encontrada");
+      }
+
+      const contentType = response.headers.get("content-type") || "image/png";
+      const buffer = await response.arrayBuffer();
+
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.send(Buffer.from(buffer));
+    } catch (err) {
+      res.status(404).send("Error al obtener imagen");
+    }
+  });
 };

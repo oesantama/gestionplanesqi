@@ -312,17 +312,48 @@
       </div>
 
       <!-- TABLA DETALLADA MATRIZ DE CUMPLIMIENTO -->
-      <div class="text-h6 text-weight-bold text-white q-mt-lg">Matriz Consolidada de Consumo de Planes</div>
-      <q-card class="qi-card">
+      <q-card class="qi-card q-mt-lg">
         <q-table
-          :rows="empresasMetrics"
+          :rows="displayedEmpresas"
           :columns="columns"
+          :filter="tableFilter"
           row-key="id_empresa"
           dark
           flat
           dense
           no-data-label="No hay métricas registradas"
         >
+          <template #top>
+            <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
+              <div class="text-h6 text-weight-bold text-white">Matriz Consolidada de Consumo de Planes</div>
+              <div class="row items-center q-gutter-sm">
+                <q-input
+                  v-model="tableFilter"
+                  outlined
+                  dark
+                  dense
+                  placeholder="Buscar empresa, plan..."
+                  color="primary"
+                  style="min-width: 260px;"
+                >
+                  <template #append>
+                    <q-icon name="search" color="primary" />
+                    <q-icon v-if="tableFilter" name="close" class="cursor-pointer" @click="tableFilter = ''" />
+                  </template>
+                </q-input>
+
+                <q-btn
+                  color="positive"
+                  icon="file_download"
+                  label="Exportar a Excel"
+                  no-caps
+                  unelevated
+                  class="text-weight-bold"
+                  @click="exportDashboardExcel"
+                />
+              </div>
+            </div>
+          </template>
           <template #body-cell-empresa="props">
             <q-td :props="props">
               <div class="row items-center no-wrap">
@@ -442,11 +473,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api'
+import { exportTableToExcel } from '../utils/exportExcel'
 
 const $q = useQuasar()
 
 const loading = ref(true)
 const selectedEmpresaId = ref(null)
+const tableFilter = ref('')
 const consolidado = ref({
   empresas_totales: 0,
   empresas_activas: 0,
@@ -596,6 +629,10 @@ function handleImageError(emp) {
   if (emp) {
     emp.hasImageError = true
   }
+}
+
+function exportDashboardExcel() {
+  exportTableToExcel(columns, displayedEmpresas.value, 'matriz_consumo_planes_qi')
 }
 
 onMounted(() => {

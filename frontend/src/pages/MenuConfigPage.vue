@@ -50,9 +50,40 @@
             bordered
             :rows="adminData.menus"
             :columns="columnsMenu"
+            :filter="menuFilter"
             row-key="id"
             class="bg-dark qi-card"
           >
+            <template #top>
+              <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
+                <div class="text-subtitle1 text-weight-bold text-white">Menús Principales</div>
+                <div class="row items-center q-gutter-sm">
+                  <q-input
+                    v-model="menuFilter"
+                    outlined
+                    dark
+                    dense
+                    placeholder="Buscar menú..."
+                    color="primary"
+                    style="min-width: 220px;"
+                  >
+                    <template #append>
+                      <q-icon name="search" color="primary" />
+                      <q-icon v-if="menuFilter" name="close" class="cursor-pointer" @click="menuFilter = ''" />
+                    </template>
+                  </q-input>
+                  <q-btn
+                    color="positive"
+                    icon="file_download"
+                    label="Exportar Excel"
+                    no-caps
+                    unelevated
+                    class="text-weight-bold"
+                    @click="exportExcel('menus')"
+                  />
+                </div>
+              </div>
+            </template>
             <template #body-cell-icono="props">
               <q-td :props="props">
                 <q-icon :name="props.value || 'circle'" color="primary" size="20px" />
@@ -85,9 +116,40 @@
             bordered
             :rows="adminData.submenus"
             :columns="columnsSubmenu"
+            :filter="menuFilter"
             row-key="id"
             class="bg-dark qi-card"
           >
+            <template #top>
+              <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
+                <div class="text-subtitle1 text-weight-bold text-white">Submenús de Nivel 2</div>
+                <div class="row items-center q-gutter-sm">
+                  <q-input
+                    v-model="menuFilter"
+                    outlined
+                    dark
+                    dense
+                    placeholder="Buscar submenú..."
+                    color="primary"
+                    style="min-width: 220px;"
+                  >
+                    <template #append>
+                      <q-icon name="search" color="primary" />
+                      <q-icon v-if="menuFilter" name="close" class="cursor-pointer" @click="menuFilter = ''" />
+                    </template>
+                  </q-input>
+                  <q-btn
+                    color="positive"
+                    icon="file_download"
+                    label="Exportar Excel"
+                    no-caps
+                    unelevated
+                    class="text-weight-bold"
+                    @click="exportExcel('submenus')"
+                  />
+                </div>
+              </div>
+            </template>
             <template #body-cell-icono="props">
               <q-td :props="props">
                 <q-icon :name="props.value || 'navigate_next'" color="primary" size="20px" />
@@ -120,9 +182,40 @@
             bordered
             :rows="adminData.tabs"
             :columns="columnsTabs"
+            :filter="menuFilter"
             row-key="id"
             class="bg-dark qi-card"
           >
+            <template #top>
+              <div class="row full-width items-center justify-between q-col-gutter-sm q-py-xs">
+                <div class="text-subtitle1 text-weight-bold text-white">Tabs y Subsecciones</div>
+                <div class="row items-center q-gutter-sm">
+                  <q-input
+                    v-model="menuFilter"
+                    outlined
+                    dark
+                    dense
+                    placeholder="Buscar tab..."
+                    color="primary"
+                    style="min-width: 220px;"
+                  >
+                    <template #append>
+                      <q-icon name="search" color="primary" />
+                      <q-icon v-if="menuFilter" name="close" class="cursor-pointer" @click="menuFilter = ''" />
+                    </template>
+                  </q-input>
+                  <q-btn
+                    color="positive"
+                    icon="file_download"
+                    label="Exportar Excel"
+                    no-caps
+                    unelevated
+                    class="text-weight-bold"
+                    @click="exportExcel('tabs')"
+                  />
+                </div>
+              </div>
+            </template>
             <template #body-cell-icono="props">
               <q-td :props="props">
                 <q-icon :name="props.value || 'tab'" color="primary" size="20px" />
@@ -155,10 +248,22 @@
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api'
+import { exportTableToExcel } from '../utils/exportExcel.js'
 
 const $q = useQuasar()
 const activeTab = ref('menus')
+const menuFilter = ref('')
 const adminData = ref({ menus: [], submenus: [], tabs: [] })
+
+function exportExcel(type) {
+  if (type === 'menus') {
+    exportTableToExcel(columnsMenu, adminData.value.menus, 'menus_nivel1_qi')
+  } else if (type === 'submenus') {
+    exportTableToExcel(columnsSubmenu, adminData.value.submenus, 'submenus_nivel2_qi')
+  } else if (type === 'tabs') {
+    exportTableToExcel(columnsTabs, adminData.value.tabs, 'tabs_nivel3_qi')
+  }
+}
 
 const columnsMenu = [
   { name: 'id', label: 'ID', field: 'id', align: 'left', sortable: true },

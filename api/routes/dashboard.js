@@ -48,6 +48,9 @@ module.exports = (app) => {
         if (rutaLogo.startsWith('http://')) {
           rutaLogo = rutaLogo.replace(/^http:\/\//i, 'https://');
         }
+        if (rutaLogo) {
+          rutaLogo = `/api/empresas/logo-proxy?url=${encodeURIComponent(rutaLogo)}`;
+        }
 
         let vehiculosReal = 0;
         let remolquesReal = 0;
