@@ -1,15 +1,12 @@
-FROM node:22-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Copiar código de la aplicación y dependencias
 COPY package*.json ./
+RUN npm install --production --no-audit --no-fund
+
 COPY . .
 
-# Instalar dependencias si no existen en el contexto
-RUN if [ ! -d "node_modules" ]; then npm install --production --no-audit --no-fund || true; fi
-
-# Puerto por defecto para el servicio backend
 ENV PORT=3060
 EXPOSE 3060
 
