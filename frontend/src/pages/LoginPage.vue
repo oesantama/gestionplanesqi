@@ -113,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api'
@@ -131,6 +131,13 @@ const password = ref('')
 const showPassword = ref(false)
 const rememberMe = ref(true)
 const loading = ref(false)
+
+onMounted(() => {
+  const existingToken = localStorage.getItem('qi_token')
+  if (existingToken) {
+    router.push('/')
+  }
+})
 
 async function onLogin() {
   if (!username.value || !password.value) return
@@ -176,10 +183,13 @@ async function onLogin() {
         : `¡Bienvenido ${data.usuario.nombre_completo || inputUser}!`,
       icon: isOfflineSession ? 'cloud_off' : 'verified_user',
       position: 'top',
-      timeout: 5000
+      timeout: 4000
     })
 
-    router.push('/')
+    if (window.location.hash) {
+      window.location.hash = '#/'
+    }
+    await router.push('/')
   } catch (err) {
     // Si apiFetch falló por cualquier motivo de red, intentar respaldo directo con la base local de usuarios
     const authRes = localUserDb.authenticate(inputUser, inputPass)

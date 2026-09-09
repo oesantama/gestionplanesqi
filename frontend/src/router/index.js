@@ -31,10 +31,7 @@ function isChunkError(errorReason) {
   return (
     errMsg.includes('Failed to fetch dynamically imported module') ||
     errMsg.includes('Importing a module script failed') ||
-    errMsg.includes('error loading dynamically imported module') ||
-    errMsg.includes('ERR_ABORTED') ||
-    errMsg.includes('text/html') ||
-    errMsg.includes('404')
+    errMsg.includes('error loading dynamically imported module')
   )
 }
 

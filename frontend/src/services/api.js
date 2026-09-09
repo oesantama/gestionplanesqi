@@ -275,12 +275,12 @@ export async function apiFetch(endpoint, options = {}) {
       } catch (e) {}
     }
 
-    // Si retornó la conexión y hay items encolados, sincronizar en segundo plano
-    if (response.ok && offlineSync.getPendingCount() > 0) {
+    // Si retornó la conexión y hay items encolados, sincronizar en segundo plano (Evitar durante /auth/login)
+    if (response.ok && !cleanEndpoint.includes('/auth/login') && offlineSync.getPendingCount() > 0) {
       offlineSync.triggerAutoSync(apiFetch)
     }
 
-    if (response.status === 401) {
+    if (response.status === 401 && !cleanEndpoint.includes('/auth/login')) {
       const data = await response.json().catch(() => ({}))
       
       const message = data.code === 'SESSION_SUPERSEDED'
