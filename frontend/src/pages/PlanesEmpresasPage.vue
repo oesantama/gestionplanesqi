@@ -165,7 +165,7 @@
             <q-avatar icon="history" color="primary" text-color="dark" class="q-mr-sm" size="40px" />
             <div>
               <div class="text-h6 text-weight-bold">Histórico de Movimientos de Planes</div>
-              <div class="text-caption text-grey-4">Auditoría Inalterable (ISO 27001 / BASC)</div>
+              <div class="text-caption text-grey-4">Auditoría Inalterable de Seguridad</div>
             </div>
           </div>
           <q-btn icon="close" flat round dense v-close-popup />

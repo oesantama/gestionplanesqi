@@ -10,7 +10,7 @@
     <div class="row q-col-gutter-md">
       <!-- Tarjeta de Perfil -->
       <div class="col-12 col-md-4">
-        <q-card class="qi-card q-pa-md column items-center text-center overflow-hidden">
+        <q-card class="qi-card q-pa-md column items-center text-center overflow-hidden q-mb-md">
           <q-avatar size="90px" color="secondary" text-color="primary" class="text-weight-bolder text-h3 border-glow q-mb-sm">
             {{ userInitial }}
           </q-avatar>
@@ -20,8 +20,37 @@
           <div class="text-caption text-grey-5 q-mb-sm word-break-all full-width">{{ profile.email }}</div>
 
           <q-chip color="positive" text-color="dark" icon="shield" size="sm" class="text-weight-bold">
-            Sesión Segura ISO 27001 / BASC
+            Sesión Segura y Cifrada
           </q-chip>
+        </q-card>
+
+        <!-- Tarjeta de Estado de Contraseña & Vencimiento -->
+        <q-card class="qi-card q-pa-md border-glow">
+          <div class="text-subtitle2 text-weight-bold text-white row items-center q-mb-xs">
+            <q-icon name="lock_clock" color="warning" class="q-mr-xs" size="20px" />
+            Vencimiento de Contraseña
+          </div>
+
+          <div class="text-caption text-grey-4 q-mb-sm">
+            Por políticas de seguridad, la contraseña debe renovarse obligatoriamente cada 90 días.
+          </div>
+
+          <div class="qi-card q-pa-sm q-mb-sm bg-dark-page">
+            <div class="row items-center justify-between text-caption">
+              <span class="text-grey-4">Última actualización:</span>
+              <span class="text-weight-bold text-white">{{ formatFecha(profile.password_actualizado_en) }}</span>
+            </div>
+            <div class="row items-center justify-between text-caption q-mt-xs">
+              <span class="text-grey-4">Días restantes:</span>
+              <q-badge :color="(profile.dias_para_vencer <= 15) ? 'warning' : 'positive'" text-color="dark" class="text-weight-bold">
+                {{ profile.dias_para_vencer !== undefined ? profile.dias_para_vencer : '90' }} día(s)
+              </q-badge>
+            </div>
+          </div>
+
+          <q-banner v-if="profile.dias_para_vencer !== undefined && profile.dias_para_vencer <= 15" dense class="bg-warning text-dark rounded-borders text-caption text-weight-bold">
+            ⚠️ Tu contraseña vencerá pronto (en {{ profile.dias_para_vencer }} días). Te sugerimos actualizarla a continuación.
+          </q-banner>
         </q-card>
       </div>
 
@@ -227,6 +256,16 @@ const saving = ref(false)
 const userInitial = computed(() => {
   return (profile.value.nombre_completo || 'A').charAt(0).toUpperCase()
 })
+
+function formatFecha(fechaStr) {
+  if (!fechaStr) return 'No registrada'
+  try {
+    const d = new Date(fechaStr)
+    return d.toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' })
+  } catch (e) {
+    return fechaStr
+  }
+}
 
 function validatePasswordComplexity(pass) {
   if (pass.length < 8) return 'La contraseña debe tener al menos 8 caracteres'

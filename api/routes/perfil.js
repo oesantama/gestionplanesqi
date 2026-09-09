@@ -1,10 +1,10 @@
 const pool = require("../database");
 const bcrypt = require("bcryptjs");
 const { verifyActiveSession } = require("../middleware/authMiddleware");
-const { validatePasswordComplexity, checkPasswordReuseHistory, recordNewPasswordHash } = require("../helpers/passwordPolicy");
+const { validatePasswordComplexity, checkPasswordReuseHistory, recordNewPasswordHash, calculatePasswordExpirationInfo } = require("../helpers/passwordPolicy");
 
 module.exports = (app) => {
-  // GET /api/perfil - Obtener datos del perfil actual
+  // GET /api/perfil - Obtener datos del perfil actual y estado de vencimiento de contraseña
   app.get("/api/perfil", verifyActiveSession, async (req, res) => {
     try {
       const userId = req.user.id;
@@ -20,7 +20,12 @@ module.exports = (app) => {
         return res.status(404).json({ message: "Usuario no encontrado" });
       }
 
-      res.json(rows[0]);
+      const expInfo = calculatePasswordExpirationInfo(rows[0].password_actualizado_en);
+
+      res.json({
+        ...rows[0],
+        ...expInfo
+      });
     } catch (error) {
       console.error("Error al obtener perfil:", error);
       res.status(500).json({ message: "Error al recuperar información del perfil" });

@@ -1,14 +1,14 @@
 <template>
   <router-view />
 
-  <!-- Diálogo de Advertencia por Inactividad (ISO 27001 / BASC) -->
+  <!-- Diálogo de Advertencia por Inactividad (Políticas de Seguridad) -->
   <q-dialog v-model="showInactivityWarning" persistent transition-show="scale" transition-hide="scale">
     <q-card class="bg-dark text-white q-pa-md border-glow" style="width: 420px; max-width: 90vw; border-radius: 14px;">
       <q-card-section class="row items-center q-pb-none">
         <q-avatar icon="timer" color="warning" text-color="dark" size="44px" />
         <div class="q-ml-md">
           <div class="text-h6 text-weight-bold">Advertencia de Inactividad</div>
-          <div class="text-caption text-grey-4">Estándar ISO 27001 / BASC</div>
+          <div class="text-caption text-grey-4">Altos Estándares de Seguridad</div>
         </div>
       </q-card-section>
 
@@ -45,7 +45,7 @@
 
       <q-card-section class="text-body2 text-grey-3 q-py-sm">
         Se ha detectado otra pestaña de <strong>Qinspecting</strong> activa en este navegador.
-        Por políticas de confidencialidad y control de concurrencia BASC / ISO 27001, solo se permite una pestaña activa a la vez.
+        Por políticas de seguridad y control de concurrencia, solo se permite una pestaña activa a la vez.
       </q-card-section>
 
       <q-card-actions align="center" class="q-mt-md column q-gutter-y-sm">
@@ -71,14 +71,14 @@
     </q-card>
   </q-dialog>
 
-  <!-- Diálogo de Cambio Obligatorio de Contraseña Expirada (ISO 27001 / BASC) -->
+  <!-- Diálogo de Cambio Obligatorio de Contraseña Expirada (Altos Estándares de Seguridad) -->
   <q-dialog v-model="showExpiredPasswordModal" persistent backdrop-filter="blur(8px)" transition-show="scale" transition-hide="scale">
     <q-card class="bg-dark text-white q-pa-md border-glow" style="width: 520px; max-width: 95vw; border-radius: 16px; border: 2px solid #ff4d4f;">
       <q-card-section class="row items-center q-pb-none">
         <q-avatar icon="lock_clock" color="negative" text-color="white" size="48px" />
         <div class="q-ml-md">
           <div class="text-h6 text-weight-bold text-negative">Contraseña Expirada (90 Días)</div>
-          <div class="text-caption text-grey-4">Normas de Seguridad ISO 27001 / BASC</div>
+          <div class="text-caption text-grey-4">Políticas de Seguridad</div>
         </div>
       </q-card-section>
 

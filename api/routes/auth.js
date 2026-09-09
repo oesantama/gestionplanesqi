@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { JWT_SECRET, verifyActiveSession } = require("../middleware/authMiddleware");
 
-// Helper para registrar eventos de auditoría inalterables (ISO 27001 / BASC)
+// Helper para registrar eventos de auditoría inalterables (Estándares de Seguridad)
 async function registrarBitacora(usuarioId, username, evento, detalles, req) {
   try {
     const ipOrigen = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1";
@@ -56,7 +56,7 @@ module.exports = (app) => {
 
       // Verificar si la cuenta está bloqueada por intentos fallidos
       if (user.estado === 2 || (user.bloqueado_hasta && new Date(user.bloqueado_hasta) > new Date())) {
-        await registrarBitacora(user.id, user.username, "LOGIN_BLOQUEADO", { motivo: "Cuenta bloqueada por seguridad BASC/ISO" }, req);
+        await registrarBitacora(user.id, user.username, "LOGIN_BLOQUEADO", { motivo: "Cuenta bloqueada por políticas de seguridad" }, req);
         return res.status(403).json({ message: "Cuenta temporariamente bloqueada por seguridad. Contacta al administrador." });
       }
 
@@ -72,7 +72,7 @@ module.exports = (app) => {
         let queryUpdate = `UPDATE sys_usuarios SET intentos_fallidos = ?`;
         const paramsUpdate = [nuevosIntentos];
 
-        // Bloqueo tras 5 intentos fallidos (Norma BASC / ISO 27001)
+        // Bloqueo tras 5 intentos fallidos (Políticas de Seguridad)
         if (nuevosIntentos >= 5) {
           const bloqueadoHasta = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
           queryUpdate += `, estado = 2, bloqueado_hasta = ?`;

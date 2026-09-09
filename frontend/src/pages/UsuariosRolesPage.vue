@@ -4,7 +4,7 @@
     <div class="row items-center justify-between q-mb-lg">
       <div>
         <div class="text-h5 text-weight-bolder text-white">Gestión de Usuarios, Roles y Permisos</div>
-        <div class="text-caption text-grey-4">Administración de acceso de usuarios y matriz granular de permisos (ISO 27001 / BASC)</div>
+        <div class="text-caption text-grey-4">Administración de acceso de usuarios y matriz granular de permisos (Altos Estándares de Seguridad)</div>
       </div>
       <q-btn
         v-if="activeTab === 'usuarios'"
@@ -257,7 +257,7 @@
           >
             <div class="row items-center justify-between q-mb-xs">
               <span class="text-weight-bold" :class="isPasswordValid ? 'text-positive' : 'text-negative'">
-                {{ isPasswordValid ? '✓ Contraseña Cumple Todos los Requisitos de Seguridad' : '⚠️ Requisitos de Contraseña Faltantes (ISO 27001 / BASC):' }}
+                {{ isPasswordValid ? '✓ Contraseña Cumple Todos los Requisitos de Seguridad' : '⚠️ Requisitos de Contraseña Faltantes:' }}
               </span>
             </div>
             <div class="row q-col-gutter-xs">

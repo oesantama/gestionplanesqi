@@ -4,7 +4,7 @@
     <div class="row items-center justify-between q-mb-lg">
       <div>
         <div class="text-h5 text-weight-bolder text-white">Bitácora de Auditoría de Seguridad</div>
-        <div class="text-caption text-grey-4">Registro inalterable de eventos de acceso e inicios de sesión (ISO 27001 / BASC)</div>
+        <div class="text-caption text-grey-4">Registro inalterable de eventos de acceso e inicios de sesión (Auditoría de Seguridad)</div>
       </div>
     </div>
 

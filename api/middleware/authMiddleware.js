@@ -2,11 +2,11 @@ const pool = require("../database");
 const jwt = require("jsonwebtoken");
 const { calculatePasswordExpirationInfo } = require("../helpers/passwordPolicy");
 
-const JWT_SECRET = process.env.JWT_SECRET || "Qinspecting_Secret_ISO27001_BASC_Key_2026";
+const JWT_SECRET = process.env.JWT_SECRET || "Qinspecting_Secret_Security_Key_2026";
 
 /**
  * Middleware para verificar que el token JWT sea válido Y que la sesión no haya sido suplantada en otro dispositivo
- * Cumple con normas ISO 27001 y BASC sobre control de acceso de sesión única por usuario y expiración de contraseña.
+ * Cumple con altos estándares de seguridad sobre control de acceso de sesión única por usuario y expiración de contraseña.
  */
 async function verifyActiveSession(req, res, next) {
   try {
@@ -30,10 +30,10 @@ async function verifyActiveSession(req, res, next) {
 
     const dbUser = rows[0];
 
-    // Control BASC/ISO: Si el session_id en DB es diferente al del Token JWT, se inició sesión en otro dispositivo
+    // Control de Sesión Única: Si el session_id en DB es diferente al del Token JWT, se inició sesión en otro dispositivo
     if (dbUser.session_id && dbUser.session_id !== decoded.session_id) {
       return res.status(401).json({
-        message: "Se ha iniciado sesión desde otro dispositivo o navegador. Tu sesión anterior ha sido inhabilitada por seguridad (ISO 27001 / BASC).",
+        message: "Se ha iniciado sesión desde otro dispositivo o navegador. Tu sesión anterior ha sido inhabilitada por seguridad.",
         code: "SESSION_SUPERSEDED"
       });
     }

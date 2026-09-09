@@ -7,7 +7,7 @@
           <q-avatar icon="dashboard" color="primary" text-color="dark" size="38px" />
           <div>
             <div class="text-h5 text-weight-bolder text-white">Dashboard Ejecutivo de Consumo de Planes QI</div>
-            <div class="text-caption text-grey-4">Monitoreo en tiempo real de consumo por empresa vs límites de Plan (ISO 27001 / BASC)</div>
+            <div class="text-caption text-grey-4">Monitoreo en tiempo real de consumo por empresa vs límites de Plan (Altos Estándares de Seguridad)</div>
           </div>
         </div>
       </div>

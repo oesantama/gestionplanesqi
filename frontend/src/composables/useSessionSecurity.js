@@ -1,8 +1,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
+import { apiFetch } from '../services/api'
 
-// Configuración de Tiempos de Inactividad (Norma ISO 27001 / BASC)
+// Configuración de Tiempos de Inactividad (Políticas de Seguridad)
 const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000 // 15 minutos de inactividad máxima
 const WARNING_WINDOW_MS = 60 * 1000 // 60 segundos de advertencia previa
 
@@ -43,7 +44,7 @@ export function useSessionSecurity() {
         hasWarnedPasswordExpiration = true
         $q.notify({
           type: 'warning',
-          message: `⚠️ Tu contraseña vencerá en ${user.dias_para_vencer} día(s). Por seguridad (ISO 27001 / BASC), te sugerimos actualizarla desde Mi Perfil.`,
+          message: `⚠️ Tu contraseña vencerá en ${user.dias_para_vencer} día(s). Por seguridad, te sugerimos actualizarla desde Mi Perfil.`,
           icon: 'shield_alert',
           position: 'top-right',
           timeout: 10000,
@@ -57,6 +58,20 @@ export function useSessionSecurity() {
             }
           ]
         })
+      }
+    } catch (e) {}
+  }
+
+  async function refreshUserPasswordStatus() {
+    if (!checkUserLoggedIn()) return
+    try {
+      const res = await apiFetch('/auth/me')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.usuario) {
+          localStorage.setItem('qi_user', JSON.stringify(data.usuario))
+          checkPasswordStatus()
+        }
       }
     } catch (e) {}
   }
@@ -79,7 +94,7 @@ export function useSessionSecurity() {
     })
   }
 
-  function forceLogout(reasonMessage = 'Sesión cerrada automáticamente por inactividad por seguridad (ISO 27001/BASC)') {
+  function forceLogout(reasonMessage = 'Sesión cerrada automáticamente por inactividad por seguridad') {
     showInactivityWarning.value = false
     showExpiredPasswordModal.value = false
     hasWarnedPasswordExpiration = false
@@ -139,18 +154,14 @@ export function useSessionSecurity() {
       const { type, senderTabId, targetTabId } = event.data || {}
 
       if (type === 'PING_TAB' && senderTabId !== tabId) {
-        // Otra pestaña acaba de abrirse -> Notificarle que ya hay una pestaña activa
         channel.postMessage({ type: 'PONG_TAB', senderTabId: tabId, targetTabId: senderTabId })
       } else if (type === 'PONG_TAB' && targetTabId === tabId) {
-        // Recibimos respuesta: Ya existe otra pestaña abierta en este mismo navegador
         isMultiTabBlocked.value = true
       } else if (type === 'TAKE_CONTROL' && senderTabId !== tabId) {
-        // La otra pestaña asumió el control
         isMultiTabBlocked.value = true
       }
     }
 
-    // Al montar, preguntamos si hay otras pestañas abiertas
     if (checkUserLoggedIn()) {
       channel.postMessage({ type: 'PING_TAB', senderTabId: tabId })
     }
@@ -171,6 +182,7 @@ export function useSessionSecurity() {
     startInactivityMonitor()
     initSingleTabEnforcement()
     checkPasswordStatus()
+    refreshUserPasswordStatus()
     window.addEventListener('qi-password-expired', handleExpiredEvent)
   })
 

@@ -23,6 +23,20 @@
 
         <!-- User Options & Profile -->
         <div class="row items-center q-gutter-x-xs">
+          <!-- Password Expiration Warning Chip -->
+          <q-chip
+            v-if="currentUser.dias_para_vencer !== undefined && currentUser.dias_para_vencer <= 15"
+            dense
+            clickable
+            color="warning"
+            text-color="dark"
+            class="text-weight-bold cursor-pointer"
+            to="/perfil"
+          >
+            <q-icon name="lock_clock" size="16px" class="q-mr-xs" />
+            <span>Contraseña vence en {{ currentUser.dias_para_vencer }}d</span>
+          </q-chip>
+
           <!-- State Chip Badge -->
           <q-chip
             dense
@@ -186,7 +200,7 @@
         <!-- Footer Drawer Info -->
         <div class="q-pa-md">
           <div class="qi-card q-pa-sm text-center">
-            <div class="text-caption text-primary text-weight-bold">ISO 27001 / BASC</div>
+            <div class="text-caption text-primary text-weight-bold">Estándares de Seguridad</div>
             <div class="text-caption text-grey-5" style="font-size: 10px;">Sesión Segura Encriptada</div>
           </div>
         </div>
@@ -253,12 +267,12 @@
             </div>
           </div>
 
-          <!-- Información ISO 27001 / BASC -->
+          <!-- Información de Seguridad -->
           <div class="qi-card q-pa-md row items-center q-gutter-x-sm">
             <q-icon name="shield" color="info" size="26px" />
             <div>
-              <div class="text-subtitle2 text-weight-bold text-white">Norma ISO 27001 / BASC</div>
-              <div class="text-caption text-grey-4">Sesión cifrada con JWT y registro de auditoría local activo.</div>
+              <div class="text-subtitle2 text-weight-bold text-white">Estándares de Seguridad</div>
+              <div class="text-caption text-grey-4">Sesión cifrada con JWT y registro de auditoría activo.</div>
             </div>
           </div>
         </q-card-section>
@@ -341,7 +355,7 @@ const DEFAULT_FALLBACK_MENU = [
       { id: 51, nombre: 'Gestión de Menús', descripcion: 'Menús, submenús y pestañas', icono: 'menu_open', ruta: '/configuracion/menus' },
       { id: 52, nombre: 'Usuarios y Roles', descripcion: 'Gestión de accesos', icono: 'manage_accounts', ruta: '/configuracion/usuarios' },
       { id: 53, nombre: 'Operadoras', descripcion: 'Empresas operadoras registradas', icono: 'apartment', ruta: '/configuracion/operadoras' },
-      { id: 54, nombre: 'Bitácora de Auditoría', descripcion: 'Auditoría ISO 27001 / BASC', icono: 'security', ruta: '/configuracion/bitacora' }
+      { id: 54, nombre: 'Bitácora de Auditoría', descripcion: 'Auditoría de Seguridad', icono: 'security', ruta: '/configuracion/bitacora' }
     ]
   }
 ]
