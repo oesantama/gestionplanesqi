@@ -14,7 +14,8 @@ git pull origin main || git pull origin master
 
 # 2. Ejecutar la compilación y despliegue de contenedores de Producción
 echo "🐳 2. Reconstruyendo e iniciando contenedores Docker..."
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.prod.yml up -d
 
 # 3. Ejecutar migración de tablas
 echo "🗄️ 3. Verificando tablas de base de datos..."
