@@ -209,13 +209,20 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useSessionSecurity } from './composables/useSessionSecurity'
 import { apiFetch } from './services/api'
+import { offlineSync } from './services/offlineSync'
 
 const $q = useQuasar()
 $q.dark.set(true)
+
+onMounted(() => {
+  if (navigator.onLine) {
+    offlineSync.triggerAutoSync(apiFetch)
+  }
+})
 
 const {
   showInactivityWarning,

@@ -24,6 +24,11 @@ const { encrypt, decrypt } = require("../helpers/encryption");
 module.exports = (app) => {
   app.verifyActiveSession = verifyActiveSession;
 
+  // GET /api/auth/ping - Endpoint de diagnóstico de salud y conectividad de la API
+  app.get("/api/auth/ping", (req, res) => {
+    return res.json({ ok: true, timestamp: new Date().toISOString(), service: "QI-API", message: "API activa y respondiendo correctamente" });
+  });
+
   // POST /api/auth/login - Autenticación segura con bcrypt, sesión única por dispositivo y auditoría
   app.post("/api/auth/login", async (req, res) => {
     try {

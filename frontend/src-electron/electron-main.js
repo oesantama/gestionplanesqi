@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, globalShortcut } from 'electron'
 import path from 'node:path'
 import os from 'node:os'
 import {
@@ -6,21 +6,16 @@ import {
   resolveElectronAssetsPath
 } from '#q-app/electron/main'
 
-// needed in case process is undefined under Linux
 const platform = process.platform || os.platform()
 
 async function createWindow () {
-  /**
-   * Initial window options
-   */
   const mainWindow = new BrowserWindow({
-    icon: resolveElectronAssetsPath('icons/icon.png'), // Windows and Linux
-    width: 1000,
-    height: 600,
+    icon: resolveElectronAssetsPath('icons/icon.png'),
+    width: 1200,
+    height: 750,
     useContentSize: true,
     webPreferences: {
       contextIsolation: true,
-      // https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/electron-preload-script
       preload: path.join(import.meta.dirname, 'electron-preload.cjs')
     }
   })
@@ -31,14 +26,17 @@ async function createWindow () {
     await mainWindow.loadFile('index.html')
   }
 
+  // Permitir la apertura de DevTools mediante F12 o Ctrl+Shift+I para diagnósticos en Windows/Linux
+  globalShortcut.register('F12', () => {
+    mainWindow.webContents.toggleDevTools()
+  })
+
+  globalShortcut.register('CommandOrControl+Shift+I', () => {
+    mainWindow.webContents.toggleDevTools()
+  })
+
   if (import.meta.env.QUASAR_DEBUG) {
-    // if on DEV or Production with debug enabled
     mainWindow.webContents.openDevTools()
-  } else {
-    // we're on production; no access to devtools pls
-    mainWindow.webContents.on('devtools-opened', () => {
-      mainWindow.webContents.closeDevTools()
-    })
   }
 }
 
@@ -51,6 +49,10 @@ void app.whenReady().then(() => {
       createWindow()
     }
   })
+})
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
 })
 
 app.on('window-all-closed', () => {

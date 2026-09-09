@@ -23,9 +23,74 @@
 
         <!-- User Options & Profile -->
         <div class="row items-center q-gutter-x-sm">
-          <q-btn flat round dense icon="notifications" color="grey-4">
-            <q-badge color="accent" floating transparent rounded>3</q-badge>
-          </q-btn>
+          <q-chip
+            dense
+            clickable
+            :color="isOnline ? 'positive' : 'warning'"
+            text-color="dark"
+            class="text-weight-bold cursor-pointer"
+            @click="showDiagnosticModal = true"
+          >
+            <q-icon :name="isOnline ? 'wifi' : 'wifi_off'" size="16px" class="q-mr-xs" />
+            <span>{{ isOnline ? 'En línea' : 'Modo Offline' }}</span>
+            <q-badge v-if="pendingCount > 0" color="dark" text-color="warning" class="q-ml-xs text-weight-bolder">
+              {{ pendingCount }}
+            </q-badge>
+          </q-chip>
+          <!-- Notifications Dropdown -->
+          <q-btn-dropdown flat round dense icon="notifications" color="grey-4" dropdown-icon="none">
+            <template #label>
+              <q-badge v-if="pendingCount > 0 || !isOnline" color="warning" floating transparent rounded>
+                {{ pendingCount > 0 ? pendingCount : '!' }}
+              </q-badge>
+              <q-badge v-else color="positive" floating transparent rounded>✓</q-badge>
+            </template>
+
+            <q-card dark class="bg-dark shadow-10" style="min-width: 320px; max-width: 380px; border: 1px solid rgba(0, 210, 106, 0.2);">
+              <q-card-section class="row items-center justify-between q-py-xs bg-grey-9">
+                <div class="text-subtitle2 text-weight-bold text-primary">Notificaciones del Sistema</div>
+                <q-chip dense :color="isOnline ? 'positive' : 'warning'" text-color="dark" class="text-weight-bold">
+                  {{ isOnline ? 'En línea' : 'Offline' }}
+                </q-chip>
+              </q-card-section>
+
+              <q-separator dark />
+
+              <q-list dark separator dense>
+                <q-item v-if="pendingCount > 0" clickable v-close-popup @click="showDiagnosticModal = true">
+                  <q-item-section avatar>
+                    <q-icon name="cloud_off" color="warning" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="text-weight-bold text-warning">Operaciones Pendientes</q-item-label>
+                    <q-item-label caption class="text-grey-4">Hay {{ pendingCount }} registro(s) encolado(s) para sincronización.</q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item clickable v-close-popup @click="showDiagnosticModal = true">
+                  <q-item-section avatar>
+                    <q-icon :name="isOnline ? 'wifi' : 'wifi_off'" :color="isOnline ? 'positive' : 'warning'" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="text-weight-bold">{{ isOnline ? 'Conexión Establecida' : 'Modo Sin Conexión' }}</q-item-label>
+                    <q-item-label caption class="text-grey-4">
+                      {{ isOnline ? 'Conectado a https://gestion.qinspecting.com/api' : 'Trabajando con base de datos local del dispositivo.' }}
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item clickable v-close-popup to="/perfil">
+                  <q-item-section avatar>
+                    <q-icon name="verified_user" color="info" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="text-weight-bold">Norma ISO 27001 / BASC</q-item-label>
+                    <q-item-label caption class="text-grey-4">Sesión cifrada y auditoría activa.</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-card>
+          </q-btn-dropdown>
 
           <q-btn-dropdown flat no-caps dense class="q-px-xs">
             <template #label>
@@ -148,18 +213,31 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <DiagnosticDialog v-model="showDiagnosticModal" />
   </q-layout>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api.js'
+import { offlineSync } from '../services/offlineSync.js'
+import DiagnosticDialog from '../components/DiagnosticDialog.vue'
 import logoQi from '../assets/Qi.png'
 
 const $q = useQuasar()
 const router = useRouter()
+
+const showDiagnosticModal = ref(false)
+const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true)
+const pendingCount = ref(offlineSync.getPendingCount())
+
+function updateNetworkStatus() {
+  isOnline.value = navigator.onLine
+  pendingCount.value = offlineSync.getPendingCount()
+}
 
 const leftDrawerOpen = ref(false)
 const menuList = ref([])
@@ -217,6 +295,15 @@ function logout() {
 onMounted(() => {
   loadUserData()
   fetchMenu()
+  window.addEventListener('online', updateNetworkStatus)
+  window.addEventListener('offline', updateNetworkStatus)
+  window.addEventListener('qi-offline-synced', updateNetworkStatus)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('online', updateNetworkStatus)
+  window.removeEventListener('offline', updateNetworkStatus)
+  window.removeEventListener('qi-offline-synced', updateNetworkStatus)
 })
 </script>
 

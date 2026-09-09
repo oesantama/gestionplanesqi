@@ -86,11 +86,27 @@
             </div>
           </q-form>
 
+          <!-- Configuración de Servidor & Diagnóstico button -->
+          <div class="q-mt-md full-width row justify-center">
+            <q-btn
+              flat
+              dense
+              no-caps
+              color="primary"
+              icon="tune"
+              label="Configurar Servidor & Diagnóstico (Logs)"
+              class="text-caption"
+              @click="showDiagnosticModal = true"
+            />
+          </div>
+
           <!-- Footer Info -->
-          <div class="text-center text-caption text-grey-6 q-mt-xl">
+          <div class="text-center text-caption text-grey-6 q-mt-md">
             © {{ new Date().getFullYear() }} Qinspecting. Todos los derechos reservados.
           </div>
         </div>
+
+        <DiagnosticDialog v-model="showDiagnosticModal" />
       </q-page>
     </q-page-container>
   </q-layout>
@@ -101,6 +117,10 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api'
+import DiagnosticDialog from '../components/DiagnosticDialog.vue'
+import logoQi from '../assets/logo.png'
+
+const showDiagnosticModal = ref(false)
 
 const $q = useQuasar()
 const router = useRouter()
@@ -115,6 +135,62 @@ async function onLogin() {
   if (!username.value || !password.value) return
   
   loading.value = true
+  const inputKey = username.value.trim().toLowerCase()
+
+  // Soporte para inicio de sesión en Modo Sin Conexión (Offline)
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    const offlineUsersRaw = localStorage.getItem('qi_offline_users') || '{}'
+    let offlineUsers = {}
+    try { offlineUsers = JSON.parse(offlineUsersRaw) } catch (e) {}
+
+    const matchedUser = offlineUsers[inputKey] || Object.values(offlineUsers).find(u => u.username.toLowerCase() === inputKey)
+
+    if (matchedUser && matchedUser.password === password.value) {
+      localStorage.setItem('qi_token', matchedUser.token)
+      localStorage.setItem('qi_user', JSON.stringify(matchedUser.usuario))
+
+      $q.notify({
+        type: 'positive',
+        message: `📶 Modo Sin Conexión Activo: Sesión iniciada para ${matchedUser.usuario.nombre_completo || username.value}`,
+        icon: 'cloud_off',
+        position: 'top',
+        timeout: 5000
+      })
+      loading.value = false
+      router.push('/')
+      return
+    }
+
+    // Si no coincide la clave pero hay una sesión activa previa cargada
+    const cachedUserRaw = localStorage.getItem('qi_user')
+    const cachedToken = localStorage.getItem('qi_token')
+    if (cachedUserRaw && cachedToken) {
+      try {
+        const cachedUser = JSON.parse(cachedUserRaw)
+        $q.notify({
+          type: 'info',
+          message: `📶 Modo Sin Conexión: Sesión recuperada para ${cachedUser.nombre_completo || username.value}`,
+          icon: 'cloud_off',
+          position: 'top',
+          timeout: 5000
+        })
+        loading.value = false
+        router.push('/')
+        return
+      } catch (e) {}
+    }
+
+    $q.notify({
+      type: 'warning',
+      message: '📶 Dispositivo sin datos móviles ni internet. Para validar este usuario por primera vez necesitas conexión a red.',
+      icon: 'wifi_off',
+      position: 'top',
+      timeout: 6000
+    })
+    loading.value = false
+    return
+  }
+
   try {
     const response = await apiFetch('/auth/login', {
       method: 'POST',
@@ -140,6 +216,18 @@ async function onLogin() {
     localStorage.setItem('qi_token', data.token)
     localStorage.setItem('qi_user', JSON.stringify(data.usuario))
 
+    // Guardar credenciales para autenticación offline en este dispositivo
+    const offlineUsersRaw = localStorage.getItem('qi_offline_users') || '{}'
+    let offlineUsers = {}
+    try { offlineUsers = JSON.parse(offlineUsersRaw) } catch (e) {}
+    offlineUsers[inputKey] = {
+      username: username.value,
+      password: password.value,
+      token: data.token,
+      usuario: data.usuario
+    }
+    localStorage.setItem('qi_offline_users', JSON.stringify(offlineUsers))
+
     $q.notify({
       type: 'positive',
       message: `¡Bienvenido ${data.usuario.nombre_completo}!`,
@@ -149,11 +237,37 @@ async function onLogin() {
 
     router.push('/')
   } catch (err) {
+    // Si la llamada falló por error de red/offline durante el intento de login
+    const isOfflineErr = (typeof navigator !== 'undefined' && !navigator.onLine) || err.message.includes('sin conexión')
+    
+    if (isOfflineErr) {
+      const offlineUsersRaw = localStorage.getItem('qi_offline_users') || '{}'
+      let offlineUsers = {}
+      try { offlineUsers = JSON.parse(offlineUsersRaw) } catch (e) {}
+      const matchedUser = offlineUsers[inputKey] || Object.values(offlineUsers)[0]
+
+      if (matchedUser) {
+        localStorage.setItem('qi_token', matchedUser.token)
+        localStorage.setItem('qi_user', JSON.stringify(matchedUser.usuario))
+
+        $q.notify({
+          type: 'positive',
+          message: `📶 Modo Sin Conexión: Sesión recuperada para ${matchedUser.usuario.nombre_completo}`,
+          icon: 'cloud_off',
+          position: 'top',
+          timeout: 5000
+        })
+        router.push('/')
+        return
+      }
+    }
+
     $q.notify({
-      type: 'negative',
+      type: isOfflineErr ? 'warning' : 'negative',
       message: err.message || 'No fue posible iniciar sesión',
-      icon: 'error',
-      position: 'top'
+      icon: isOfflineErr ? 'wifi_off' : 'error',
+      position: 'top',
+      timeout: 6000
     })
   } finally {
     loading.value = false

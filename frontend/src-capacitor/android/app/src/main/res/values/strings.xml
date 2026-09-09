@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Gestión Planes QI</string>
+    <string name="title_activity_main">Gestión Planes QI</string>
+    <string name="package_name">com.qinspecting.gestionplanesqi</string>
+    <string name="custom_url_scheme">com.qinspecting.gestionplanesqi</string>
+</resources>
