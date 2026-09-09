@@ -121,7 +121,16 @@ async function onLogin() {
       body: JSON.stringify({ username: username.value, password: password.value })
     })
 
-    const data = await response.json()
+    const contentType = response.headers.get('content-type') || ''
+    let data = {}
+
+    if (contentType.includes('application/json')) {
+      data = await response.json()
+    } else {
+      const text = await response.text()
+      console.error('Respuesta no JSON del servidor:', text)
+      throw new Error(`El servidor API no devolvió una respuesta válida (${response.status})`)
+    }
 
     if (!response.ok) {
       throw new Error(data.message || 'Error en autenticación')

@@ -1,16 +1,11 @@
 # ==============================================================================
 # PROXY REVERSO PARA CPANEL LITESPEED / APACHE A DOCKER
-# Permite abrir http://gestion.qinspecting.com directamente sin puertos
+# Redirige todo el tráfico a Nginx Frontend (Puerto 8060) que gestiona la app y la API
 # ==============================================================================
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
-  # 1. Redireccionar peticiones API al contenedor Node (Puerto 3060)
-  RewriteCond %{REQUEST_URI} ^/api
-  RewriteRule ^api/(.*)$ http://127.0.0.1:3060/api/$1 [P,L]
-
-  # 2. Redireccionar peticiones Frontend al contenedor Nginx Docker (Puerto 8060)
-  RewriteCond %{REQUEST_URI} !^/api
+  # Redireccionar todo el tráfico al contenedor Nginx Docker (Puerto 8060)
   RewriteRule ^(.*)$ http://127.0.0.1:8060/$1 [P,L]
 </IfModule>
