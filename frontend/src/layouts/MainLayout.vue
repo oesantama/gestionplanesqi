@@ -125,37 +125,69 @@
           </div>
 
           <q-list v-else dark dense class="q-px-sm q-gutter-y-xs">
-            <q-item
-              v-for="item in menuList"
-              :key="item.id || item.ruta"
-              clickable
-              v-ripple
-              :to="item.ruta"
-              active-class="qi-active-menu"
-              class="rounded-borders text-grey-3"
-            >
-              <q-item-section avatar min-width="36px">
-                <q-icon :name="item.icono || 'extension'" color="primary" />
-              </q-item-section>
+            <template v-for="item in menuList" :key="item.id || item.nombre">
+              <!-- Categoría Acordeón con Submenús (Nivel 2) -->
+              <q-expansion-item
+                v-if="item.submenus && item.submenus.length > 0"
+                dark
+                dense
+                dense-toggle
+                expand-separator
+                :icon="item.icono || 'folder'"
+                :label="item.nombre || item.titulo"
+                header-class="text-grey-3 text-weight-bold rounded-borders"
+                :default-opened="isGroupActive(item)"
+              >
+                <q-list dark dense class="q-pl-sm q-gutter-y-xs q-py-xs">
+                  <q-item
+                    v-for="sub in item.submenus"
+                    :key="sub.id || sub.ruta"
+                    clickable
+                    v-ripple
+                    :to="sub.ruta"
+                    active-class="qi-active-menu"
+                    class="rounded-borders text-grey-3 q-py-xs"
+                  >
+                    <q-item-section avatar min-width="28px">
+                      <q-icon :name="sub.icono || 'circle'" color="primary" size="18px" />
+                    </q-item-section>
 
-              <q-item-section>
-                <q-item-label class="text-weight-bold">{{ item.titulo }}</q-item-label>
-                <q-item-label v-if="item.descripcion" caption class="text-grey-5 text-caption">
-                  {{ item.descripcion }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
+                    <q-item-section>
+                      <q-item-label class="text-weight-medium text-caption">{{ sub.nombre || sub.titulo }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-expansion-item>
+
+              <!-- Opción Individual sin Submenús -->
+              <q-item
+                v-else
+                clickable
+                v-ripple
+                :to="item.ruta"
+                active-class="qi-active-menu"
+                class="rounded-borders text-grey-3"
+              >
+                <q-item-section avatar min-width="36px">
+                  <q-icon :name="item.icono || 'extension'" color="primary" />
+                </q-item-section>
+
+                <q-item-section>
+                  <q-item-label class="text-weight-bold">{{ item.nombre || item.titulo }}</q-item-label>
+                  <q-item-label v-if="item.descripcion" caption class="text-grey-5 text-caption">
+                    {{ item.descripcion }}
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
           </q-list>
         </div>
 
-        <!-- Footer Drawer Security Badge -->
-        <div class="q-px-md">
-          <div class="qi-card q-pa-md row items-center no-wrap">
-            <q-icon name="shield" color="primary" size="28px" class="q-mr-sm" />
-            <div>
-              <div class="text-caption text-weight-bold text-white">ISO 27001 / BASC</div>
-              <div class="text-caption text-grey-5" style="font-size: 11px;">Sesión Segura Encriptada</div>
-            </div>
+        <!-- Footer Drawer Info -->
+        <div class="q-pa-md">
+          <div class="qi-card q-pa-sm text-center">
+            <div class="text-caption text-primary text-weight-bold">ISO 27001 / BASC</div>
+            <div class="text-caption text-grey-5" style="font-size: 10px;">Sesión Segura Encriptada</div>
           </div>
         </div>
       </div>
@@ -261,6 +293,64 @@ const syncingNow = ref(false)
 const isOnline = ref(localStorage.getItem('qi_is_offline') !== 'true' && (typeof navigator !== 'undefined' ? navigator.onLine : true))
 const pendingCount = ref(offlineSync.getPendingCount())
 
+const DEFAULT_FALLBACK_MENU = [
+  {
+    id: 1,
+    nombre: 'Resumen operacional de flotas',
+    descripcion: 'Dashboard ejecutivo',
+    icono: 'dashboard',
+    ruta: '/',
+    submenus: []
+  },
+  {
+    id: 2,
+    nombre: 'Empresas, Planes QI y Asignaciones',
+    descripcion: 'Gestión comercial y asignaciones',
+    icono: 'business',
+    submenus: [
+      { id: 21, nombre: 'Empresas', descripcion: 'Directorio de empresas', icono: 'store', ruta: '/empresas' },
+      { id: 22, nombre: 'Planes QI', descripcion: 'Catálogo de tarifas', icono: 'monetization_on', ruta: '/planes' },
+      { id: 23, nombre: 'Asignación de Planes', descripcion: 'Planes por empresa', icono: 'assignment_turned_in', ruta: '/planes-empresas' }
+    ]
+  },
+  {
+    id: 3,
+    nombre: 'Gestión de personal y colaboradores',
+    descripcion: 'Directorio humano',
+    icono: 'badge',
+    submenus: [
+      { id: 31, nombre: 'Empleados', descripcion: 'Registro de empleados', icono: 'people', ruta: '/empleados' }
+    ]
+  },
+  {
+    id: 4,
+    nombre: 'Plataforma & Comunicaciones',
+    descripcion: 'Avisos y capacitaciones',
+    icono: 'campaign',
+    submenus: [
+      { id: 41, nombre: 'Mensajes de Avisos', descripcion: 'Notificaciones masivas', icono: 'chat', ruta: '/mensajes' },
+      { id: 42, nombre: 'Capacitaciones Operadora', descripcion: 'Cursos y módulos', icono: 'school', ruta: '/capacitaciones-operadora' }
+    ]
+  },
+  {
+    id: 5,
+    nombre: 'Configuración',
+    descripcion: 'Parámetros y seguridad',
+    icono: 'settings',
+    submenus: [
+      { id: 51, nombre: 'Gestión de Menús', descripcion: 'Menús, submenús y pestañas', icono: 'menu_open', ruta: '/configuracion/menus' },
+      { id: 52, nombre: 'Usuarios y Roles', descripcion: 'Gestión de accesos', icono: 'manage_accounts', ruta: '/configuracion/usuarios' },
+      { id: 53, nombre: 'Bitácora de Auditoría', descripcion: 'Auditoría ISO 27001 / BASC', icono: 'security', ruta: '/configuracion/bitacora' }
+    ]
+  }
+]
+
+function isGroupActive(item) {
+  if (!item || !item.submenus || !router.currentRoute.value) return false
+  const currentPath = router.currentRoute.value.path
+  return item.submenus.some(sub => sub.ruta === currentPath)
+}
+
 function updateNetworkStatus(evt) {
   if (evt && evt.type === 'qi-network-status') {
     isOnline.value = evt.detail.online
@@ -306,6 +396,17 @@ function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
+function useFallbackMenu() {
+  const cached = localStorage.getItem('qi_cache_menu')
+  if (cached) {
+    try {
+      menuList.value = JSON.parse(cached)
+      return
+    } catch (e) {}
+  }
+  menuList.value = DEFAULT_FALLBACK_MENU
+}
+
 async function fetchMenu() {
   const token = localStorage.getItem('qi_token')
   if (!token) {
@@ -320,10 +421,19 @@ async function fetchMenu() {
     const res = await apiFetch(`/menu?rol_id=${rolId}`)
 
     if (res && res.ok) {
-      menuList.value = await res.json()
+      const data = await res.json()
+      if (Array.isArray(data) && data.length > 0) {
+        menuList.value = data
+        localStorage.setItem('qi_cache_menu', JSON.stringify(data))
+      } else {
+        useFallbackMenu()
+      }
+    } else {
+      useFallbackMenu()
     }
   } catch (err) {
     console.error('Error al cargar menú desde BD:', err)
+    useFallbackMenu()
   } finally {
     loadingMenu.value = false
   }
