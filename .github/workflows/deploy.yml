@@ -16,5 +16,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || 22022 }}
           script: |
-            cd ~/gestionplanesqi || cd /var/www/gestionplanesqi
-            ./scripts/deploy_server.sh
+            cd ~/gestion || cd ~/gestionplanesqi || cd /var/www/gestion || cd ~/repositories/gestion || cd ~/public_html/gestion
+            chmod +x ./scripts/deploy_server.sh 2>/dev/null || true
+            bash ./scripts/deploy_server.sh
+
