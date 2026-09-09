@@ -117,11 +117,20 @@ module.exports = (app) => {
   });
 
   // GET /api/empresas/logo-proxy - Proxy seguro de imágenes para evitar ORB/CORS/404 en la consola del navegador
+  const TRANSPARENT_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+
   app.get("/api/empresas/logo-proxy", async (req, res) => {
+    const sendFallback = () => {
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.send(TRANSPARENT_PNG);
+    };
+
     try {
       const targetUrl = req.query.url;
       if (!targetUrl || !targetUrl.startsWith("http")) {
-        return res.status(404).send("URL de imagen requerida");
+        return sendFallback();
       }
 
       const response = await fetch(targetUrl, {
@@ -129,7 +138,7 @@ module.exports = (app) => {
       });
 
       if (!response.ok) {
-        return res.status(404).send("Imagen no encontrada");
+        return sendFallback();
       }
 
       const contentType = response.headers.get("content-type") || "image/png";
@@ -140,7 +149,7 @@ module.exports = (app) => {
       res.setHeader("Access-Control-Allow-Origin", "*");
       res.send(Buffer.from(buffer));
     } catch (err) {
-      res.status(404).send("Error al obtener imagen");
+      sendFallback();
     }
   });
 };

@@ -39,5 +39,21 @@ export default defineRouter((/* { store, ssrContext } */) => {
     }
   })
 
+  // Recarga automática limpia ante cambio de versión / módulo JS no encontrado por deploy
+  Router.onError((error, to) => {
+    const errMsg = (error && error.message) ? error.message : String(error)
+    const isChunkError = errMsg.includes('Failed to fetch dynamically imported module') ||
+                         errMsg.includes('Importing a module script failed') ||
+                         errMsg.includes('text/html')
+
+    if (isChunkError) {
+      console.warn('⚡ Nueva versión detectada en el servidor. Recargando bundle...')
+      if (typeof window !== 'undefined') {
+        const targetPath = to ? to.fullPath : '/'
+        window.location.href = targetPath
+      }
+    }
+  })
+
   return Router
 })
