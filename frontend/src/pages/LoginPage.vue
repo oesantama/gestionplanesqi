@@ -100,7 +100,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import logoQi from '../assets/Qi.png'
+import { apiFetch } from '../services/api'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -116,9 +116,8 @@ async function onLogin() {
   
   loading.value = true
   try {
-    const response = await fetch('http://localhost:3060/api/auth/login', {
+    const response = await apiFetch('/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: username.value, password: password.value })
     })
 

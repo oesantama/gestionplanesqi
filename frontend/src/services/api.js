@@ -1,6 +1,6 @@
 import { Notify } from 'quasar'
 
-const API_BASE_URL = 'http://localhost:3060/api'
+const API_BASE_URL = '/api'
 
 export async function apiFetch(endpoint, options = {}) {
   const token = localStorage.getItem('qi_token')

@@ -154,6 +154,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
+import { apiFetch } from '../services/api'
 
 const $q = useQuasar()
 const activeTab = ref('menus')
@@ -189,7 +190,7 @@ const columnsTabs = [
 
 async function fetchAdminData() {
   try {
-    const res = await fetch('http://localhost:3060/api/menu/admin')
+    const res = await apiFetch('/menu/admin')
     if (res.ok) {
       adminData.value = await res.json()
     }
@@ -200,9 +201,8 @@ async function fetchAdminData() {
 
 async function toggleStatus(tipo, id, nuevoEstado) {
   try {
-    const res = await fetch('http://localhost:3060/api/menu/toggle-status', {
+    const res = await apiFetch('/menu/toggle-status', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tipo, id, estado: nuevoEstado })
     })
 
