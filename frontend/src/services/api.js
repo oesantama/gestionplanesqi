@@ -145,6 +145,10 @@ export async function apiFetch(endpoint, options = {}) {
       offlineSync.enqueueRequest(cleanEndpoint, method, bodyData, options.headers)
       offlineCache.applyMutationToCache(cleanEndpoint, method, bodyData)
 
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('qi-offline-mutation', { detail: { endpoint: cleanEndpoint, method } }))
+      }
+
       return new Response(JSON.stringify({ success: true, offline: true, message: 'Operación guardada localmente en tu dispositivo.', data: bodyData }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }

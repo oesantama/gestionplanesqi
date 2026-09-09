@@ -1,23 +1,23 @@
 <template>
-  <q-page class="q-pa-lg bg-dark-page text-white">
-    <div class="row items-center justify-between q-mb-lg">
+  <q-page class="q-pa-md q-pa-sm-lg bg-dark-page text-white overflow-hidden">
+    <div class="row items-center justify-between q-mb-md">
       <div>
         <div class="text-h5 text-weight-bolder text-white">Mi Perfil de Usuario</div>
         <div class="text-caption text-grey-4">Información personal, credenciales y seguridad de la cuenta</div>
       </div>
     </div>
 
-    <div class="row q-col-gutter-lg">
+    <div class="row q-col-gutter-md">
       <!-- Tarjeta de Perfil -->
       <div class="col-12 col-md-4">
-        <q-card class="qi-card q-pa-lg column items-center text-center">
-          <q-avatar size="100px" color="secondary" text-color="primary" class="text-weight-bolder text-h3 border-glow q-mb-md">
+        <q-card class="qi-card q-pa-md column items-center text-center overflow-hidden">
+          <q-avatar size="90px" color="secondary" text-color="primary" class="text-weight-bolder text-h3 border-glow q-mb-sm">
             {{ userInitial }}
           </q-avatar>
 
-          <div class="text-h6 text-weight-bold text-white">{{ profile.nombre_completo || 'Usuario' }}</div>
+          <div class="text-h6 text-weight-bold text-white ellipsis full-width">{{ profile.nombre_completo || 'Usuario' }}</div>
           <div class="text-subtitle2 text-primary q-mb-xs">{{ profile.rol_nombre || 'Rol' }}</div>
-          <div class="text-caption text-grey-5 q-mb-md">{{ profile.email }}</div>
+          <div class="text-caption text-grey-5 q-mb-sm word-break-all full-width">{{ profile.email }}</div>
 
           <q-chip color="positive" text-color="dark" icon="shield" size="sm" class="text-weight-bold">
             Sesión Segura ISO 27001 / BASC
@@ -314,3 +314,14 @@ onMounted(() => {
   fetchPerfil()
 })
 </script>
+
+<style scoped>
+.word-break-all {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+.border-glow {
+  border: 1.5px solid #00D26A;
+  box-shadow: 0 0 15px rgba(0, 210, 106, 0.2);
+}
+</style>

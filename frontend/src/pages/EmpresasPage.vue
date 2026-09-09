@@ -120,7 +120,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '../services/api.js'
 import { exportTableToExcel } from '../utils/exportExcel.js'
@@ -259,5 +259,12 @@ async function toggleEstado(row) {
 
 onMounted(() => {
   fetchEmpresas()
+  window.addEventListener('qi-offline-mutation', fetchEmpresas)
+  window.addEventListener('qi-offline-synced', fetchEmpresas)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('qi-offline-mutation', fetchEmpresas)
+  window.removeEventListener('qi-offline-synced', fetchEmpresas)
 })
 </script>

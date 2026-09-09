@@ -39,41 +39,52 @@ export class OfflineCacheService {
     return null
   }
 
-  // Actualizar la caché local en mutaciones offline (POST, PUT, DELETE) para que la UI se actualice inmediatamente sin internet
+  // Actualizar la caché local en mutaciones offline (POST, PUT, DELETE, PATCH)
   applyMutationToCache(endpoint, method, body) {
     if (!body || typeof body !== 'object') return
 
     try {
-      const key = this.getCacheKey(endpoint)
-      const current = this.getCache(endpoint)
+      const parts = endpoint.replace(/^\/+/, '').split('/')
+      const baseEndpoint = parts[0] // ej: 'empresas', 'planes', 'capacitaciones'
+      const idFromRoute = parts.length > 1 && !isNaN(parts[1]) ? Number(parts[1]) : null
 
-      if (Array.isArray(current)) {
-        let updatedList = [...current]
+      const targetEndpoints = [endpoint, baseEndpoint]
 
-        if (method === 'POST') {
-          // Agregar elemento creado offline con ID temporal si no tiene
-          const newItem = {
-            id: body.id || `offline-${Date.now()}`,
-            ...body,
-            _offline_created: true
+      for (const ep of targetEndpoints) {
+        const key = this.getCacheKey(ep)
+        const current = this.getCache(ep)
+
+        if (Array.isArray(current)) {
+          let updatedList = [...current]
+
+          const matchId = (item) => {
+            const itemId = item.Id_empresa || item.Id_plan || item.Id_capacitacion || item.id || item.Id
+            const bodyId = body.Id_empresa || body.Id_plan || body.Id_capacitacion || body.id || body.Id || idFromRoute
+            return itemId == bodyId
           }
-          updatedList.unshift(newItem)
-          this.setCache(endpoint, updatedList)
-          logger.info(`Mutación POST aplicada a la caché local [${key}]`, newItem)
-        } else if (method === 'PUT' || method === 'PATCH') {
-          // Actualizar elemento en lista
-          const index = updatedList.findIndex(item => item.id === body.id)
-          if (index !== -1) {
-            updatedList[index] = { ...updatedList[index], ...body, _offline_updated: true }
-          } else {
-            updatedList.unshift({ ...body, _offline_updated: true })
-          }
-          this.setCache(endpoint, updatedList)
-          logger.info(`Mutación PUT aplicada a la caché local [${key}]`)
-        } else if (method === 'DELETE') {
-          if (body.id) {
-            updatedList = updatedList.filter(item => item.id !== body.id)
-            this.setCache(endpoint, updatedList)
+
+          if (method === 'POST') {
+            const newItem = {
+              Id_empresa: body.Id_empresa || Date.now(),
+              id: body.id || Date.now(),
+              ...body,
+              _offline_created: true
+            }
+            updatedList.unshift(newItem)
+            this.setCache(ep, updatedList)
+            logger.info(`Mutación POST aplicada a la caché local [${key}]`, newItem)
+          } else if (method === 'PUT' || method === 'PATCH') {
+            const index = updatedList.findIndex(matchId)
+            if (index !== -1) {
+              updatedList[index] = { ...updatedList[index], ...body, _offline_updated: true }
+            } else {
+              updatedList.unshift({ ...body, _offline_updated: true })
+            }
+            this.setCache(ep, updatedList)
+            logger.info(`Mutación ${method} aplicada a la caché local [${key}]`)
+          } else if (method === 'DELETE') {
+            updatedList = updatedList.filter(item => !matchId(item))
+            this.setCache(ep, updatedList)
             logger.info(`Mutación DELETE aplicada a la caché local [${key}]`)
           }
         }
