@@ -6,7 +6,10 @@ const helmet = require("helmet");
 const compression = require("compression");
 
 const app = express();
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(compression());
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
