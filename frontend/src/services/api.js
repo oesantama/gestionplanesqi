@@ -105,11 +105,61 @@ export async function testApiConnection(targetUrl = null) {
   return { ok: false, status: 0, message: `No fue posible conectar con ninguna de las IPs o puertos del servidor` }
 }
 
-function setNetworkState(online) {
+export function setNetworkState(online) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('qi_is_offline', online ? 'false' : 'true')
+    if (online) {
+      localStorage.removeItem('qi_is_offline')
+    } else {
+      localStorage.setItem('qi_is_offline', 'true')
+    }
     window.dispatchEvent(new CustomEvent('qi-network-status', { detail: { online } }))
   }
+}
+
+export async function checkRealConnectivity() {
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    setNetworkState(false)
+    return false
+  }
+
+  const baseUrl = getApiBaseUrl()
+  const pingEndpoint = `${baseUrl}/auth/login`
+
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 4000)
+
+    let response
+    try {
+      response = await fetch(pingEndpoint, {
+        method: 'OPTIONS',
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal
+      })
+    } catch (e) {
+      response = await fetch(pingEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+        signal: controller.signal
+      }).catch(() => null)
+    }
+
+    clearTimeout(timeoutId)
+
+    if (response && (response.ok || response.status === 400 || response.status === 401 || response.status === 405 || response.status === 422 || response.status === 404)) {
+      setNetworkState(true)
+      if (offlineSync.getPendingCount() > 0) {
+        offlineSync.triggerAutoSync(apiFetch)
+      }
+      return true
+    }
+  } catch (err) {
+    logger.warn('Error comprobando conectividad real:', err.message)
+  }
+
+  setNetworkState(false)
+  return false
 }
 
 export async function apiFetch(endpoint, options = {}) {

@@ -33,18 +33,43 @@ class OfflineSyncService {
   initListeners() {
     if (typeof window === 'undefined') return
 
-    window.addEventListener('online', () => {
-      logger.info('Evento de red: Conectado a internet / datos')
-      this.isOnline = true
-      this.notifyOnline()
-      this.triggerAutoSync()
-    })
+    const handleReconnection = async () => {
+      logger.info('Evento de red: Conectado a internet/datos. Comprobando servidor...')
+      const apiModule = await import('./api.js')
+      const isConnected = await apiModule.checkRealConnectivity()
+      if (isConnected) {
+        this.isOnline = true
+        this.notifyOnline()
+        this.triggerAutoSync(apiModule.apiFetch)
+      }
+    }
+
+    window.addEventListener('online', handleReconnection)
 
     window.addEventListener('offline', () => {
       logger.warn('Evento de red: Dispositivo SIN conexión a internet o datos')
       this.isOnline = false
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('qi_is_offline', 'true')
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('qi-network-status', { detail: { online: false } }))
+      }
       this.notifyOffline()
     })
+
+    // Comprobación periódica automática cada 6 segundos cuando hay elementos pendientes o estado offline
+    setInterval(async () => {
+      if (typeof localStorage !== 'undefined' && (this.queue.length > 0 || localStorage.getItem('qi_is_offline') === 'true')) {
+        if (typeof navigator !== 'undefined' && navigator.onLine) {
+          const apiModule = await import('./api.js')
+          const isConnected = await apiModule.checkRealConnectivity()
+          if (isConnected && this.queue.length > 0) {
+            this.triggerAutoSync(apiModule.apiFetch)
+          }
+        }
+      }
+    }, 6000)
   }
 
   notifyOffline() {
