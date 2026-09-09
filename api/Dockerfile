@@ -2,14 +2,12 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Copiar archivos de dependencias
+# Copiar código de la aplicación y dependencias
 COPY package*.json ./
-
-# Instalar dependencias de forma limpia y rápida
-RUN npm install --production --no-audit --no-fund
-
-# Copiar código de la aplicación
 COPY . .
+
+# Instalar dependencias si no existen en el contexto
+RUN if [ ! -d "node_modules" ]; then npm install --production --no-audit --no-fund || true; fi
 
 # Puerto por defecto para el servicio backend
 ENV PORT=3060

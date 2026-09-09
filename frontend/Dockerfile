@@ -4,12 +4,9 @@ FROM node:22-alpine AS build-stage
 WORKDIR /app
 
 COPY package*.json ./
-
-RUN npm install --ignore-scripts --no-audit --no-fund
-
 COPY . .
 
-RUN npm run build
+RUN if [ ! -d "dist/spa" ]; then npm install --ignore-scripts --no-audit --no-fund && npm run build; fi
 
 
 # Stage 2: Servidor Nginx para producción
