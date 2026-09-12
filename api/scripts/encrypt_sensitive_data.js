@@ -15,20 +15,8 @@ async function migrateEncryption() {
     await pool.query("ALTER TABLE Empleados MODIFY Email_Personal VARCHAR(255)");
     console.log("✅ Esquema de tablas actualizado correctamente.");
 
-    // 2. Encriptar columna 'base' en Empresas
-    console.log("\n--- 2. Encriptando columna 'base' en tabla Empresas ---");
-    const [empresas] = await pool.query("SELECT Id_empresa, Razon_social, base FROM Empresas");
-    let empCount = 0;
-
-    for (const emp of empresas) {
-      if (emp.base && !isEncrypted(emp.base)) {
-        const encryptedBase = encrypt(emp.base);
-        await pool.query("UPDATE Empresas SET base = ? WHERE Id_empresa = ?", [encryptedBase, emp.Id_empresa]);
-        empCount++;
-        console.log(`🔒 [Empresas] Id ${emp.Id_empresa} (${emp.Razon_social}): '${emp.base}' -> '${encryptedBase.substring(0, 25)}...'`);
-      }
-    }
-    console.log(`✅ ${empCount} registro(s) de Empresas encriptados.`);
+    // 2. Columna 'base' en Empresas se mantiene en texto plano para integraciones externas
+    console.log("\n--- 2. Verificando columna 'base' en tabla Empresas (se mantiene texto plano) ---");
 
     // 3. Encriptar columna 'email' en sys_usuarios
     console.log("\n--- 3. Encriptando columna 'email' en tabla sys_usuarios ---");

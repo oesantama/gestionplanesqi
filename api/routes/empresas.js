@@ -56,12 +56,11 @@ module.exports = (app) => {
         return res.status(400).json({ message: "Razón social y Nombre QI son requeridos" });
       }
 
-      const encryptedBase = encrypt(base);
-
+      // Guardar 'base' en texto plano según requerimiento para compatibilidad con otras aplicaciones
       const [result] = await pool.query(
         `INSERT INTO Empresas (Razon_social, Digito_verificacion, Direccion, nombre_QI, url_QI, ruta_logo, descripcion_logo, base, estado)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [Razon_social, Digito_verificacion, Direccion, nombre_QI, url_QI, ruta_logo, descripcion_logo, encryptedBase, estado]
+        [Razon_social, Digito_verificacion, Direccion, nombre_QI, url_QI, ruta_logo, descripcion_logo, base, estado]
       );
 
       res.status(201).json({ message: "Empresa creada exitosamente", id: result.insertId });
@@ -87,13 +86,12 @@ module.exports = (app) => {
         estado
       } = req.body || {};
 
-      const encryptedBase = encrypt(base);
-
+      // Guardar 'base' en texto plano según requerimiento para compatibilidad con otras aplicaciones
       await pool.query(
         `UPDATE Empresas 
          SET Razon_social = ?, Digito_verificacion = ?, Direccion = ?, nombre_QI = ?, url_QI = ?, ruta_logo = ?, descripcion_logo = ?, base = ?, estado = ?
          WHERE Id_empresa = ?`,
-        [Razon_social, Digito_verificacion, Direccion, nombre_QI, url_QI, ruta_logo, descripcion_logo, encryptedBase, estado, id]
+        [Razon_social, Digito_verificacion, Direccion, nombre_QI, url_QI, ruta_logo, descripcion_logo, base, estado, id]
       );
 
       res.json({ message: "Empresa actualizada exitosamente" });
